@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Gym Tracker">
     <meta name="theme-color" content="#0f172a">
     <title>Gym Tracker</title>
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkd5bSBUcmFja2VyIiwKICAic2hvcnRfbmFtZSI6ICJHeW0iLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMzYjgyZjYiCn0=">
@@ -13,9 +14,11 @@
         * { -webkit-tap-highlight-color: transparent; }
         body { overscroll-behavior: none; }
         .no-select { -webkit-user-select: none; user-select: none; }
+        /* Prevents zoom on iOS when tapping inputs */
+        input, textarea, select { font-size: 16px !important; }
     </style>
 </head>
-<body class="bg-slate-950 text-white">
+<body class="bg-slate-950 text-white font-sans">
     <div id="app"></div>
 
     <script>
@@ -201,7 +204,6 @@
 
             render() {
                 const app = document.getElementById('app');
-                
                 if (this.editingExercise) {
                     app.innerHTML = this.renderEditModal();
                 } else if (this.activeExercise) {
@@ -211,19 +213,17 @@
                 } else {
                     app.innerHTML = this.renderHome();
                 }
-                
-                this.attachEventListeners();
             }
 
             renderHome() {
                 const workoutCards = Object.values(this.workouts).map(workout => `
-                    <div class="bg-slate-800 rounded-xl overflow-hidden">
+                    <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg">
                         <button onclick="app.startWorkout('${workout.id}')" 
                                 class="w-full p-5 text-left hover:bg-slate-700 transition-all ${this.editMode ? 'pointer-events-none' : ''}">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4">
-                                    <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center">
-                                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11m-1-11-9 9"/></svg>
+                                    <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl">
+                                        🏋️
                                     </div>
                                     <div>
                                         <h3 class="text-xl font-bold">${workout.name}</h3>
@@ -242,10 +242,10 @@
                     <div class="p-4 mt-6">
                         <h2 class="text-xl font-bold mb-3 flex items-center gap-2">
                             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            Recent Workouts
+                            Recent History
                         </h2>
                         <div class="space-y-2">
-                            ${this.workoutHistory.slice(0, 10).map(w => `
+                            ${this.workoutHistory.slice(0, 5).map(w => `
                                 <div class="bg-slate-800 rounded-lg p-4">
                                     <div class="flex justify-between items-start">
                                         <div>
@@ -261,18 +261,15 @@
                 ` : '';
 
                 return `
-                    <div class="min-h-screen bg-slate-950 text-white pb-20">
-                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 pb-8">
+                    <div class="min-h-screen pb-20">
+                        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 pb-10">
                             <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center gap-3">
-                                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11m-1-11-9 9"/></svg>
-                                    <h1 class="text-3xl font-bold">Gym Tracker</h1>
-                                </div>
-                                <button onclick="app.showMenu = !app.showMenu; app.render()" class="text-white">
+                                <h1 class="text-3xl font-bold">Gym Tracker</h1>
+                                <button onclick="app.showMenu = !app.showMenu; app.render()" class="p-1">
                                     <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                                 </button>
                             </div>
-                            <p class="text-blue-100">5-Day Split Program</p>
+                            <p class="text-blue-100">Ready for your session, omarikoo?</p>
                         </div>
 
                         ${this.showMenu ? `
@@ -280,7 +277,7 @@
                                 <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()"
                                         class="w-full bg-slate-800 text-white p-3 rounded-lg flex items-center justify-center gap-2">
                                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                    ${this.editMode ? 'Done Editing' : 'Edit Workouts'}
+                                    ${this.editMode ? 'Finish Editing' : 'Customize Workouts'}
                                 </button>
                             </div>
                         ` : ''}
@@ -288,7 +285,6 @@
                         <div class="p-4 space-y-3 -mt-4">
                             ${workoutCards}
                         </div>
-
                         ${historyHTML}
                     </div>
                 `;
@@ -296,29 +292,28 @@
 
             renderEditExercises(workout) {
                 return `
-                    <div class="p-4 bg-slate-900 space-y-2">
+                    <div class="p-4 bg-slate-900 space-y-2 border-t border-slate-700">
                         ${workout.exercises.map(ex => `
                             <div class="flex items-center justify-between bg-slate-800 p-3 rounded-lg">
                                 <div class="flex-1">
                                     <div class="text-white font-medium">${ex.name}</div>
                                     <div class="text-slate-400 text-sm">${ex.sets}x${ex.reps}</div>
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex gap-1">
                                     <button onclick="app.editingExercise = { workoutId: '${workout.id}', exercise: ${JSON.stringify(ex).replace(/"/g, '&quot;')} }; app.render()"
                                             class="text-blue-400 p-2">
-                                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     </button>
                                     <button onclick="app.deleteExercise('${workout.id}', '${ex.id}')"
                                             class="text-red-400 p-2">
-                                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                     </button>
                                 </div>
                             </div>
                         `).join('')}
                         <button onclick="app.addExercise('${workout.id}')"
-                                class="w-full bg-blue-600 text-white p-3 rounded-lg flex items-center justify-center gap-2">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            Add Exercise
+                                class="w-full bg-blue-600/20 text-blue-400 p-3 rounded-lg flex items-center justify-center gap-2 mt-2 border border-blue-600/30">
+                            + Add Exercise
                         </button>
                     </div>
                 `;
@@ -327,27 +322,25 @@
             renderWorkoutList() {
                 const exerciseCards = this.currentWorkout.exercises.map(exercise => {
                     const sessionData = this.workoutSession.exercises[exercise.id];
-                    const completedCount = sessionData?.completedSets.filter(Boolean).length || 0;
-                    const isComplete = completedCount === exercise.sets;
+                    const isComplete = sessionData?.completedSets.every(Boolean);
 
                     return `
-                        <div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4 mb-3">
                             <button onclick="app.activeExercise = ${JSON.stringify(exercise).replace(/"/g, '&quot;')}; app.render()"
                                     class="flex-1 text-left">
-                                <div class="mb-2">
+                                <div class="mb-1">
                                     <h3 class="font-bold text-lg">${exercise.name}</h3>
                                     <p class="text-slate-400 text-sm">${exercise.muscle}</p>
                                 </div>
-                                <div class="flex gap-4 text-sm text-slate-400">
+                                <div class="flex gap-4 text-xs text-slate-500 uppercase tracking-wider">
                                     <span>${exercise.sets} sets</span>
                                     <span>${exercise.reps} reps</span>
-                                    <span>${exercise.rest}s rest</span>
                                 </div>
                             </button>
-                            <button onclick="app.toggleExerciseComplete('${exercise.id}', event)" class="flex-shrink-0 p-2">
+                            <button onclick="app.toggleExerciseComplete('${exercise.id}', event)" class="p-1">
                                 ${isComplete ? 
-                                    '<svg width="32" height="32" class="text-green-500" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' :
-                                    '<svg width="32" height="32" class="text-slate-600" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>'
+                                    '<svg width="32" height="32" class="text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>' :
+                                    '<svg width="32" height="32" class="text-slate-600" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>'
                                 }
                             </button>
                         </div>
@@ -355,18 +348,18 @@
                 }).join('');
 
                 return `
-                    <div class="min-h-screen bg-slate-950 text-white pb-24">
-                        <div class="${this.currentWorkout.color} p-6">
+                    <div class="min-h-screen pb-24">
+                        <div class="${this.currentWorkout.color} p-6 sticky top-0 z-10 shadow-lg">
                             <button onclick="app.currentWorkout = null; app.workoutSession = null; app.render()" 
-                                    class="mb-4 text-white">← Cancel Workout</button>
-                            <h1 class="text-3xl font-bold">${this.currentWorkout.name}</h1>
+                                    class="mb-4 text-white flex items-center gap-2">← Quit Session</button>
+                            <h1 class="text-2xl font-bold">${this.currentWorkout.name}</h1>
                             <p class="text-white/80">${this.currentWorkout.subtitle}</p>
                         </div>
-                        <div class="p-4 space-y-3">${exerciseCards}</div>
+                        <div class="p-4">${exerciseCards}</div>
                         <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-900 border-t border-slate-800">
                             <button onclick="app.finishWorkout()"
-                                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl">
-                                Finish Workout
+                                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg">
+                                Complete Workout
                             </button>
                         </div>
                     </div>
@@ -382,49 +375,41 @@
 
                 const setButtons = Array.from({length: this.activeExercise.sets}, (_, i) => `
                     <button onclick="app.toggleSet('${this.activeExercise.id}', ${i})"
-                            class="w-full p-4 rounded-lg flex items-center justify-between transition-all ${
-                                sessionData.completedSets[i] ? 'bg-green-600' : 'bg-slate-700'
+                            class="w-full p-4 rounded-lg flex items-center justify-between transition-all mb-2 ${
+                                sessionData.completedSets[i] ? 'bg-green-600 shadow-inner' : 'bg-slate-700'
                             }">
-                        <span class="font-semibold">Set ${i + 1}</span>
-                        <span>${this.activeExercise.reps} reps</span>
-                        ${sessionData.completedSets[i] ? '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : ''}
+                        <span class="font-bold uppercase text-xs">Set ${i + 1}</span>
+                        <span class="font-medium">${this.activeExercise.reps} Reps</span>
+                        ${sessionData.completedSets[i] ? '<svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>' : '<div class="w-5"></div>'}
                     </button>
                 `).join('');
 
                 return `
-                    <div class="min-h-screen bg-slate-950 text-white pb-24">
+                    <div class="min-h-screen pb-24 bg-slate-950">
                         <div class="${this.currentWorkout.color} p-6">
-                            <button onclick="app.activeExercise = null; app.render()" 
-                                    class="mb-4 text-white">← Back</button>
+                            <button onclick="app.activeExercise = null; app.render()" class="mb-4 text-white">← Exercises</button>
                             <h1 class="text-2xl font-bold">${this.activeExercise.name}</h1>
-                            <p class="text-white/80">${this.activeExercise.muscle}</p>
-                            <div class="flex gap-4 mt-3 text-sm">
-                                <span>${this.activeExercise.sets} sets</span>
-                                <span>${this.activeExercise.reps} reps</span>
-                                <span>${this.activeExercise.rest}s rest</span>
-                            </div>
+                            <p class="text-white/80">${this.activeExercise.muscle} • ${this.activeExercise.rest}s rest</p>
                         </div>
-                        <div class="p-4 space-y-6">
+                        <div class="p-4 space-y-4">
                             <div class="bg-slate-800 rounded-xl p-4">
-                                <label class="block text-sm font-semibold mb-2">Weight (kg)</label>
-                                <input type="number" inputmode="decimal" placeholder="Enter weight"
-                                       id="weightInput" value="${sessionData.weight}"
-                                       class="w-full bg-slate-700 text-white text-xl p-3 rounded-lg">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Weight (kg)</label>
+                                <input type="number" inputmode="decimal" id="weightInput" value="${sessionData.weight}"
+                                       class="w-full bg-slate-700 text-white text-2xl p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                             <div class="bg-slate-800 rounded-xl p-4">
-                                <h3 class="font-semibold mb-3">Sets</h3>
-                                <div class="space-y-2">${setButtons}</div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Sets</label>
+                                <div>${setButtons}</div>
                             </div>
                             <div class="bg-slate-800 rounded-xl p-4">
-                                <label class="block text-sm font-semibold mb-2">Notes</label>
-                                <textarea placeholder="How did it feel?" id="notesInput"
-                                          class="w-full bg-slate-700 text-white p-3 rounded-lg h-24 resize-none">${sessionData.notes}</textarea>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Notes</label>
+                                <textarea id="notesInput" class="w-full bg-slate-700 text-white p-3 rounded-lg h-24 resize-none">${sessionData.notes}</textarea>
                             </div>
                         </div>
                         <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-900 border-t border-slate-800">
-                            <button onclick="app.nextExercise()"
-                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl">
-                                Next Exercise
+                            <button onclick="app.saveDetailsAndBack()"
+                                    class="w-full bg-blue-600 py-4 rounded-xl font-bold shadow-lg">
+                                Save Exercise
                             </button>
                         </div>
                     </div>
@@ -433,46 +418,33 @@
 
             renderEditModal() {
                 return `
-                    <div class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-                        <div class="bg-slate-800 rounded-xl p-6 w-full max-w-md">
-                            <div class="flex justify-between items-center mb-4">
+                    <div class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+                        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-slate-700">
+                            <div class="flex justify-between items-center mb-6">
                                 <h2 class="text-xl font-bold text-white">Edit Exercise</h2>
-                                <button onclick="app.editingExercise = null; app.render()" class="text-slate-400">
-                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                </button>
+                                <button onclick="app.editingExercise = null; app.render()" class="text-slate-400">✕</button>
                             </div>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm text-slate-400 mb-1">Exercise Name</label>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Name</label>
                                     <input type="text" id="editName" value="${this.editingExercise.exercise.name}"
-                                           class="w-full bg-slate-700 text-white p-3 rounded-lg">
+                                           class="w-full bg-slate-700 text-white p-3 rounded-xl border border-slate-600">
                                 </div>
-                                <div>
-                                    <label class="block text-sm text-slate-400 mb-1">Muscle Group</label>
-                                    <input type="text" id="editMuscle" value="${this.editingExercise.exercise.muscle}"
-                                           class="w-full bg-slate-700 text-white p-3 rounded-lg">
-                                </div>
-                                <div class="grid grid-cols-3 gap-3">
+                                <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-sm text-slate-400 mb-1">Sets</label>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Sets</label>
                                         <input type="number" id="editSets" value="${this.editingExercise.exercise.sets}"
-                                               class="w-full bg-slate-700 text-white p-3 rounded-lg">
+                                               class="w-full bg-slate-700 text-white p-3 rounded-xl border border-slate-600">
                                     </div>
                                     <div>
-                                        <label class="block text-sm text-slate-400 mb-1">Reps</label>
+                                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Reps</label>
                                         <input type="text" id="editReps" value="${this.editingExercise.exercise.reps}"
-                                               class="w-full bg-slate-700 text-white p-3 rounded-lg">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm text-slate-400 mb-1">Rest (s)</label>
-                                        <input type="number" id="editRest" value="${this.editingExercise.exercise.rest}"
-                                               class="w-full bg-slate-700 text-white p-3 rounded-lg">
+                                               class="w-full bg-slate-700 text-white p-3 rounded-xl border border-slate-600">
                                     </div>
                                 </div>
                                 <button onclick="app.saveEdit()"
-                                        class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                                    Save Changes
+                                        class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl mt-4 shadow-lg">
+                                    Update Workout
                                 </button>
                             </div>
                         </div>
@@ -490,57 +462,27 @@
                 this.logExercise(exerciseId, sessionData);
             }
 
-            nextExercise() {
-                const currentIdx = this.currentWorkout.exercises.findIndex(e => e.id === this.activeExercise.id);
-                if (currentIdx < this.currentWorkout.exercises.length - 1) {
-                    this.activeExercise = this.currentWorkout.exercises[currentIdx + 1];
-                } else {
-                    this.activeExercise = null;
-                }
+            saveDetailsAndBack() {
+                const sessionData = this.workoutSession.exercises[this.activeExercise.id] || {
+                    completedSets: Array(this.activeExercise.sets).fill(false)
+                };
+                sessionData.weight = document.getElementById('weightInput').value;
+                sessionData.notes = document.getElementById('notesInput').value;
+                this.logExercise(this.activeExercise.id, sessionData);
+                this.activeExercise = null;
                 this.render();
             }
 
             saveEdit() {
                 const name = document.getElementById('editName').value;
-                const muscle = document.getElementById('editMuscle').value;
                 const sets = parseInt(document.getElementById('editSets').value);
                 const reps = document.getElementById('editReps').value;
-                const rest = parseInt(document.getElementById('editRest').value);
                 
                 this.updateExercise(this.editingExercise.workoutId, this.editingExercise.exercise.id, {
-                    name, muscle, sets, reps, rest
+                    name, sets, reps
                 });
                 this.editingExercise = null;
                 this.render();
-            }
-
-            attachEventListeners() {
-                const weightInput = document.getElementById('weightInput');
-                const notesInput = document.getElementById('notesInput');
-                
-                if (weightInput && this.activeExercise) {
-                    weightInput.addEventListener('input', (e) => {
-                        const sessionData = this.workoutSession.exercises[this.activeExercise.id] || {
-                            weight: '',
-                            completedSets: Array(this.activeExercise.sets).fill(false),
-                            notes: ''
-                        };
-                        sessionData.weight = e.target.value;
-                        this.logExercise(this.activeExercise.id, sessionData);
-                    });
-                }
-                
-                if (notesInput && this.activeExercise) {
-                    notesInput.addEventListener('input', (e) => {
-                        const sessionData = this.workoutSession.exercises[this.activeExercise.id] || {
-                            weight: '',
-                            completedSets: Array(this.activeExercise.sets).fill(false),
-                            notes: ''
-                        };
-                        sessionData.notes = e.target.value;
-                        this.logExercise(this.activeExercise.id, sessionData);
-                    });
-                }
             }
         }
 
