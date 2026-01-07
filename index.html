@@ -545,6 +545,7 @@
     </script>
 </body>
 </html> -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -564,6 +565,14 @@
         input, textarea { font-size: 16px !important; }
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .workout-card[draggable="true"] { cursor: move; }
+        .workout-card[draggable="true"]:hover { transform: translateY(-2px); }
+        .workout-card.dragging { opacity: 0.5; }
+        .workout-card.drag-over { border-color: #3b82f6 !important; border-width: 2px !important; border-style: dashed !important; }
+        .exercise-card[draggable="true"] { cursor: move; }
+        .exercise-card[draggable="true"]:hover { transform: translateX(2px); }
+        .exercise-card.dragging { opacity: 0.5; }
+        .exercise-card.drag-over { border-color: #3b82f6 !important; border-width: 2px !important; border-style: dashed !important; }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans">
@@ -664,6 +673,11 @@
                 this.creatingNewWorkout = false;
                 this.showMenu = false;
                 this.viewingHistory = null;
+                this.draggedWorkoutId = null;
+                this.dragOverIndex = null;
+                this.draggedExerciseId = null;
+                this.draggedExerciseWorkoutId = null;
+                this.dragOverExerciseIndex = null;
                 this.load();
                 this.setupEventDelegation();
                 this.render();
@@ -673,6 +687,7 @@
                 try {
                     localStorage.setItem('gymWorkouts', JSON.stringify(this.workouts));
                     localStorage.setItem('gymHistory', JSON.stringify(this.workoutHistory));
+                    this.saveWorkoutOrder();
                 } catch (error) {
                     console.error('Failed to save to localStorage:', error);
                     alert('Failed to save data. Your browser may be out of storage space.');
@@ -683,12 +698,34 @@
                 try {
                     const savedWorkouts = localStorage.getItem('gymWorkouts');
                     const savedHistory = localStorage.getItem('gymHistory');
+                    const savedOrder = localStorage.getItem('gymWorkoutOrder');
                     this.workouts = savedWorkouts ? JSON.parse(savedWorkouts) : defaultWorkouts;
                     this.workoutHistory = savedHistory ? JSON.parse(savedHistory) : [];
+                    this.workoutOrder = savedOrder ? JSON.parse(savedOrder) : null;
                 } catch (error) {
                     console.error('Failed to load from localStorage:', error);
                     this.workouts = defaultWorkouts;
                     this.workoutHistory = [];
+                    this.workoutOrder = null;
+                }
+            }
+
+            getWorkoutOrder() {
+                // If we have a stored order, use it; otherwise use current object key order
+                if (this.workoutOrder && Array.isArray(this.workoutOrder)) {
+                    // Filter to only include workouts that still exist
+                    return this.workoutOrder.filter(id => this.workouts[id]);
+                }
+                // Default order from object keys
+                return Object.keys(this.workouts);
+            }
+
+            saveWorkoutOrder() {
+                const order = this.getWorkoutOrder();
+                try {
+                    localStorage.setItem('gymWorkoutOrder', JSON.stringify(order));
+                } catch (error) {
+                    console.error('Failed to save workout order:', error);
                 }
             }
 
@@ -755,16 +792,34 @@
             }
 
             renderHome() {
-                const workoutCards = Object.values(this.workouts).map(workout => `
-                    <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700/50 mb-4">
+                // Get workouts in order (maintain order from object keys or use stored order)
+                const workoutOrder = this.getWorkoutOrder();
+                const workoutCards = workoutOrder.map((workoutId, index) => {
+                    const workout = this.workouts[workoutId];
+                    if (!workout) return '';
+                    
+                    const isDragging = this.draggedWorkoutId === workoutId;
+                    const isDragOver = this.dragOverIndex === index && this.draggedWorkoutId !== workoutId;
+                    
+                    return `
+                    <div 
+                        draggable="${this.editMode ? 'true' : 'false'}"
+                        data-workout-id="${workout.id}"
+                        data-workout-index="${index}"
+                        class="workout-card bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700/50 mb-4 transition-all ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+                        ${this.editMode ? `ondragstart="app.handleDragStart(event, '${workout.id}')" ondragend="app.handleDragEnd(event)" ondragover="app.handleDragOver(event, ${index})" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, ${index})"` : ''}
+                    >
                         <div class="p-5 flex items-center justify-between">
-                            <button onclick="app.startWorkout('${workout.id}')" class="flex items-center gap-4 flex-1 text-left ${this.editMode ? 'opacity-50 pointer-events-none' : ''}">
-                                <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-inner">🏋️</div>
-                                <div>
-                                    <h3 class="text-xl font-bold">${workout.name}</h3>
-                                    <p class="text-slate-400 text-sm">${workout.subtitle}</p>
-                                </div>
-                            </button>
+                            <div class="flex items-center gap-3 flex-1">
+                                ${this.editMode ? `<div class="cursor-move text-slate-500 hover:text-slate-300 text-2xl" title="Drag to reorder">☰</div>` : ''}
+                                <button onclick="app.startWorkout('${workout.id}')" class="flex items-center gap-4 flex-1 text-left ${this.editMode ? 'opacity-50 pointer-events-none' : ''}">
+                                    <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-inner">🏋️</div>
+                                    <div>
+                                        <h3 class="text-xl font-bold">${workout.name}</h3>
+                                        <p class="text-slate-400 text-sm">${workout.subtitle}</p>
+                                    </div>
+                                </button>
+                            </div>
                             ${this.editMode ? `<div class="flex gap-2">
                                 <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
                                 <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
@@ -772,7 +827,8 @@
                         </div>
                         ${this.editMode ? this.renderEditExercises(workout) : ''}
                     </div>
-                `).join('');
+                `;
+                }).join('');
 
                 const historyHTML = this.workoutHistory.length > 0 ? `
                     <div class="p-4 mt-4">
@@ -815,15 +871,39 @@
             }
 
             renderEditExercises(workout) {
-                return `<div class="p-4 bg-slate-900/80 space-y-2 border-t border-slate-700/50">
-                    ${workout.exercises.map(ex => `
-                        <div class="flex items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700">
-                            <div><div class="text-white font-bold text-sm">${ex.name}</div><div class="text-slate-400 text-xs">${ex.sets} sets • ${ex.reps}</div></div>
+                const exercises = workout.exercises.map((ex, index) => {
+                    const isDragging = this.draggedExerciseId === ex.id && this.draggedExerciseWorkoutId === workout.id;
+                    const isDragOver = this.dragOverExerciseIndex === index && this.draggedExerciseId !== ex.id && this.draggedExerciseWorkoutId === workout.id;
+                    
+                    return `
+                        <div 
+                            draggable="true"
+                            data-exercise-id="${ex.id}"
+                            data-exercise-index="${index}"
+                            data-workout-id="${workout.id}"
+                            class="exercise-card flex items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700 transition-all ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
+                            ondragstart="app.handleExerciseDragStart(event, '${workout.id}', '${ex.id}')"
+                            ondragend="app.handleExerciseDragEnd(event)"
+                            ondragover="app.handleExerciseDragOver(event, '${workout.id}', ${index})"
+                            ondragleave="app.handleExerciseDragLeave(event)"
+                            ondrop="app.handleExerciseDrop(event, '${workout.id}', ${index})"
+                        >
+                            <div class="flex items-center gap-3 flex-1">
+                                <div class="cursor-move text-slate-500 hover:text-slate-300 text-lg" title="Drag to reorder">☰</div>
+                                <div>
+                                    <div class="text-white font-bold text-sm">${ex.name}</div>
+                                    <div class="text-slate-400 text-xs">${ex.sets} sets • ${ex.reps}</div>
+                                </div>
+                            </div>
                             <div class="flex gap-2">
                                 <button onclick="app.editingExercise = { workoutId: '${workout.id}', exercise: ${JSON.stringify(ex).replace(/"/g, '&quot;').replace(/'/g, '&#39;')} }; app.render()" class="bg-blue-500/10 text-blue-400 p-2 rounded text-xs font-bold uppercase">Edit</button>
                                 <button onclick="app.deleteExercise('${workout.id}', '${ex.id}')" class="bg-red-500/10 text-red-400 p-2 rounded text-xs font-bold uppercase">✕</button>
                             </div>
-                        </div>`).join('')}
+                        </div>`;
+                }).join('');
+                
+                return `<div class="p-4 bg-slate-900/80 space-y-2 border-t border-slate-700/50">
+                    ${exercises}
                     <button onclick="app.addExercise('${workout.id}')" class="w-full bg-blue-600/10 text-blue-400 p-3 rounded-lg font-bold text-sm">+ Add New Exercise</button>
                 </div>`;
             }
@@ -1004,6 +1084,11 @@
                     exercises: []
                 };
                 
+                // Add to order array
+                const currentOrder = this.getWorkoutOrder();
+                currentOrder.push(newId);
+                this.workoutOrder = currentOrder;
+                
                 this.save();
                 this.creatingNewWorkout = false;
                 this.render();
@@ -1181,7 +1266,140 @@
                 }
                 
                 delete this.workouts[workoutId];
+                // Remove from order array if it exists
+                if (this.workoutOrder) {
+                    this.workoutOrder = this.workoutOrder.filter(id => id !== workoutId);
+                }
                 this.save();
+                this.render();
+            }
+
+            // Drag and drop handlers
+            handleDragStart(event, workoutId) {
+                this.draggedWorkoutId = workoutId;
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', workoutId);
+                // Add dragging class for visual feedback
+                event.currentTarget.classList.add('dragging');
+            }
+
+            handleDragEnd(event) {
+                event.currentTarget.classList.remove('dragging');
+                this.draggedWorkoutId = null;
+                this.dragOverIndex = null;
+                // Re-render to clear visual feedback
+                this.render();
+            }
+
+            handleDragOver(event, index) {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                if (this.draggedWorkoutId && this.draggedWorkoutId !== this.getWorkoutOrder()[index]) {
+                    this.dragOverIndex = index;
+                    this.render();
+                }
+            }
+
+            handleDragLeave(event) {
+                // Only clear if we're leaving the workout card area
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                    this.dragOverIndex = null;
+                }
+            }
+
+            handleDrop(event, targetIndex) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                if (!this.draggedWorkoutId) return;
+                
+                const currentOrder = this.getWorkoutOrder();
+                const draggedIndex = currentOrder.indexOf(this.draggedWorkoutId);
+                
+                if (draggedIndex === -1 || draggedIndex === targetIndex) {
+                    this.draggedWorkoutId = null;
+                    this.dragOverIndex = null;
+                    this.render();
+                    return;
+                }
+                
+                // Reorder the array
+                const newOrder = [...currentOrder];
+                const [removed] = newOrder.splice(draggedIndex, 1);
+                newOrder.splice(targetIndex, 0, removed);
+                
+                // Update the order
+                this.workoutOrder = newOrder;
+                this.save();
+                
+                this.draggedWorkoutId = null;
+                this.dragOverIndex = null;
+                this.render();
+            }
+
+            // Exercise drag and drop handlers
+            handleExerciseDragStart(event, workoutId, exerciseId) {
+                this.draggedExerciseId = exerciseId;
+                this.draggedExerciseWorkoutId = workoutId;
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', exerciseId);
+                event.currentTarget.classList.add('dragging');
+            }
+
+            handleExerciseDragEnd(event) {
+                event.currentTarget.classList.remove('dragging');
+                this.draggedExerciseId = null;
+                this.draggedExerciseWorkoutId = null;
+                this.dragOverExerciseIndex = null;
+                this.render();
+            }
+
+            handleExerciseDragOver(event, workoutId, index) {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+                if (this.draggedExerciseId && this.draggedExerciseWorkoutId === workoutId && this.draggedExerciseId !== this.workouts[workoutId].exercises[index]?.id) {
+                    this.dragOverExerciseIndex = index;
+                    this.render();
+                }
+            }
+
+            handleExerciseDragLeave(event) {
+                // Only clear if we're leaving the exercise card area
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                    this.dragOverExerciseIndex = null;
+                }
+            }
+
+            handleExerciseDrop(event, workoutId, targetIndex) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                if (!this.draggedExerciseId || this.draggedExerciseWorkoutId !== workoutId) return;
+                
+                const workout = this.workouts[workoutId];
+                if (!workout) return;
+                
+                const draggedIndex = workout.exercises.findIndex(ex => ex.id === this.draggedExerciseId);
+                
+                if (draggedIndex === -1 || draggedIndex === targetIndex) {
+                    this.draggedExerciseId = null;
+                    this.draggedExerciseWorkoutId = null;
+                    this.dragOverExerciseIndex = null;
+                    this.render();
+                    return;
+                }
+                
+                // Reorder the exercises array
+                const newExercises = [...workout.exercises];
+                const [removed] = newExercises.splice(draggedIndex, 1);
+                newExercises.splice(targetIndex, 0, removed);
+                
+                workout.exercises = newExercises;
+                this.save();
+                
+                this.draggedExerciseId = null;
+                this.draggedExerciseWorkoutId = null;
+                this.dragOverExerciseIndex = null;
                 this.render();
             }
 
@@ -1234,8 +1452,3 @@
 </body>
 </html>
 
-
-        const app = new GymApp();
-    </script>
-</body>
-</html>
