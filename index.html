@@ -545,7 +545,6 @@
     </script>
 </body>
 </html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -662,6 +661,7 @@
                 this.editMode = false;
                 this.editingExercise = null;
                 this.editingWorkoutHeader = null;
+                this.creatingNewWorkout = false;
                 this.showMenu = false;
                 this.viewingHistory = null;
                 this.load();
@@ -716,6 +716,8 @@
                 const app = document.getElementById('app');
                 if (this.viewingHistory) {
                     app.innerHTML = this.renderHistoryDetail();
+                } else if (this.creatingNewWorkout) {
+                    app.innerHTML = this.renderNewWorkoutForm();
                 } else if (this.editingWorkoutHeader) {
                     app.innerHTML = this.renderWorkoutHeaderEdit();
                 } else if (this.editingExercise) {
@@ -763,7 +765,10 @@
                                     <p class="text-slate-400 text-sm">${workout.subtitle}</p>
                                 </div>
                             </button>
-                            ${this.editMode ? `<button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>` : ''}
+                            ${this.editMode ? `<div class="flex gap-2">
+                                <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
+                                <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
+                            </div>` : ''}
                         </div>
                         ${this.editMode ? this.renderEditExercises(workout) : ''}
                     </div>
@@ -791,13 +796,20 @@
                     <div class="min-h-screen pb-20 animate-fade-in">
                         <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                             <div class="flex items-center justify-between mb-4">
-                                <h1 class="text-3xl font-black tracking-tight uppercase">Gym Tracker</h1>
+                                <h1 class="text-3xl font-black tracking-tight ">Gym Tracker</h1>
                                 <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
                             </div>
                             <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
                         </div>
                         ${this.showMenu ? `<div class="p-4 -mt-6"><button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button></div>` : '<div class="h-6"></div>'}
-                        <div class="px-4">${workoutCards}</div>
+                        <div class="px-4">
+                            ${workoutCards}
+                            ${this.editMode ? `<div class="bg-slate-800/50 border-2 border-dashed border-slate-600 rounded-xl p-6 mb-4 text-center">
+                                <button onclick="app.creatingNewWorkout = true; app.render()" class="w-full bg-blue-600/20 text-blue-400 p-4 rounded-lg font-bold text-lg hover:bg-blue-600/30 transition-all">
+                                    + Create New Workout
+                                </button>
+                            </div>` : ''}
+                        </div>
                         ${historyHTML}
                     </div>`;
             }
@@ -813,6 +825,43 @@
                             </div>
                         </div>`).join('')}
                     <button onclick="app.addExercise('${workout.id}')" class="w-full bg-blue-600/10 text-blue-400 p-3 rounded-lg font-bold text-sm">+ Add New Exercise</button>
+                </div>`;
+            }
+
+            renderNewWorkoutForm() {
+                const colors = [
+                    { value: 'bg-red-500', label: 'Red' },
+                    { value: 'bg-blue-500', label: 'Blue' },
+                    { value: 'bg-purple-500', label: 'Purple' },
+                    { value: 'bg-orange-500', label: 'Orange' },
+                    { value: 'bg-green-500', label: 'Green' },
+                    { value: 'bg-pink-500', label: 'Pink' },
+                    { value: 'bg-yellow-500', label: 'Yellow' },
+                    { value: 'bg-indigo-500', label: 'Indigo' }
+                ];
+                
+                const colorOptions = colors.map(color => 
+                    `<label class="flex items-center gap-3 p-3 rounded-lg border border-slate-700 cursor-pointer hover:bg-slate-700/50 transition-all">
+                        <input type="radio" name="newWorkoutColor" value="${color.value}" ${color.value === 'bg-blue-500' ? 'checked' : ''} class="w-4 h-4">
+                        <div class="${color.value} w-8 h-8 rounded-lg"></div>
+                        <span class="text-sm font-medium">${color.label}</span>
+                    </label>`
+                ).join('');
+                
+                return `<div class="fixed inset-0 bg-black/90 flex items-center justify-center p-6 z-50 animate-fade-in">
+                    <div class="bg-slate-800 p-6 rounded-3xl w-full max-w-md border border-slate-700 max-h-[90vh] overflow-y-auto">
+                        <h2 class="text-xl font-black mb-6 uppercase">Create New Workout</h2>
+                        <input id="newWorkoutName" type="text" class="w-full bg-slate-900 p-4 rounded-xl mb-4 border border-slate-700 outline-none" placeholder="Workout Name" autofocus>
+                        <input id="newWorkoutSubtitle" type="text" class="w-full bg-slate-900 p-4 rounded-xl mb-6 border border-slate-700 outline-none" placeholder="Subtitle (optional)">
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-slate-400 uppercase mb-3">Color</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                ${colorOptions}
+                            </div>
+                        </div>
+                        <button onclick="app.saveNewWorkout()" class="w-full bg-blue-600 p-4 rounded-xl font-black mb-2 shadow-lg uppercase">CREATE WORKOUT</button>
+                        <button onclick="app.creatingNewWorkout = false; app.render()" class="w-full text-slate-500 font-bold py-2">CANCEL</button>
+                    </div>
                 </div>`;
             }
 
@@ -930,6 +979,34 @@
                     <button onclick="app.saveExEdit()" class="w-full bg-blue-600 p-4 rounded-xl font-black mb-2 shadow-lg uppercase">Update</button>
                     <button onclick="app.editingExercise = null; app.render()" class="w-full text-slate-500 font-bold py-2">CANCEL</button>
                 </div></div>`;
+            }
+
+            saveNewWorkout() {
+                const name = document.getElementById('newWorkoutName').value.trim();
+                const subtitle = document.getElementById('newWorkoutSubtitle').value.trim();
+                const colorInput = document.querySelector('input[name="newWorkoutColor"]:checked');
+                const color = colorInput ? colorInput.value : 'bg-blue-500';
+                
+                if (!name) {
+                    alert('Workout name cannot be empty');
+                    return;
+                }
+                
+                // Generate unique ID
+                const newId = 'workout_' + Date.now();
+                
+                // Create new workout
+                this.workouts[newId] = {
+                    id: newId,
+                    name: name,
+                    subtitle: subtitle || 'Custom Workout',
+                    color: color,
+                    exercises: []
+                };
+                
+                this.save();
+                this.creatingNewWorkout = false;
+                this.render();
             }
 
             saveWorkoutHeader() {
@@ -1087,6 +1164,27 @@
                 }
             }
 
+            deleteWorkout(workoutId) {
+                const workout = this.workouts[workoutId];
+                if (!workout) return;
+                
+                // Prevent deleting if it's a default workout (optional safety check)
+                const defaultWorkoutIds = Object.keys(defaultWorkouts);
+                if (defaultWorkoutIds.includes(workoutId)) {
+                    if (!confirm(`Are you sure you want to delete "${workout.name}"? This is a default workout and will be restored if you clear your data.`)) {
+                        return;
+                    }
+                } else {
+                    if (!confirm(`Delete "${workout.name}"? This cannot be undone.`)) {
+                        return;
+                    }
+                }
+                
+                delete this.workouts[workoutId];
+                this.save();
+                this.render();
+            }
+
             // Helper function to escape HTML and prevent XSS
             escapeHtml(text) {
                 const div = document.createElement('div');
@@ -1130,6 +1228,12 @@
                 return null;
             }
         }
+
+        const app = new GymApp();
+    </script>
+</body>
+</html>
+
 
         const app = new GymApp();
     </script>
