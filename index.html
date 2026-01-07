@@ -288,7 +288,7 @@
 
             renderExerciseDetail() {
                 const sessionData = this.workoutSession.exercises[this.activeExercise.id] || { 
-                    sets: Array(this.activeExercise.sets).fill().map(() => ({ weight: '' })),
+                    sets: Array(this.activeExercise.sets).fill().map(() => ({ weight: '', reps: '' })),
                     notes: ''
                 };
                 
@@ -306,7 +306,7 @@
                         <div class="text-blue-400 text-xs font-bold uppercase mb-2">Last Session - ${this.getDaysAgo(lastSessionData.date || this.workoutHistory[0].date)}</div>
                         <div class="space-y-1 mb-3">
                             ${lastSessionData.sets.map((set, i) => `
-                                <div class="text-white text-sm">Set ${i + 1}: <span class="font-black">${set.weight || '—'} kg</span></div>
+                                <div class="text-white text-sm">Set ${i + 1}: <span class="font-black">${set.weight || '—'} kg × ${set.reps || '—'} reps</span></div>
                             `).join('')}
                         </div>
                         ${lastSessionData.notes ? `<div class="text-blue-300 text-xs italic mt-2">"${lastSessionData.notes}"</div>` : ''}
@@ -314,17 +314,24 @@
                 ` : '';
 
                 const setsHTML = Array(this.activeExercise.sets).fill().map((_, i) => `
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex items-center gap-3">
-                        <div class="flex-shrink-0 w-16">
-                            <div class="text-slate-400 text-xs font-bold uppercase">Set ${i + 1}</div>
-                            <div class="text-slate-500 text-[10px]">${this.activeExercise.reps}</div>
-                        </div>
-                        <div class="flex-1">
-                            <input type="number" 
-                                   id="weight-${i}" 
-                                   value="${sessionData.sets[i]?.weight || ''}" 
-                                   placeholder="Weight"
-                                   class="w-full bg-slate-900 text-white text-2xl font-black p-3 rounded-lg border border-slate-700 outline-none">
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                        <div class="text-slate-400 text-xs font-bold uppercase mb-2">Set ${i + 1} (Target: ${this.activeExercise.reps})</div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1">
+                                <input type="number" 
+                                       id="weight-${i}" 
+                                       value="${sessionData.sets[i]?.weight || ''}" 
+                                       placeholder="Weight (kg)"
+                                       class="w-full bg-slate-900 text-white text-xl font-black p-3 rounded-lg border border-slate-700 outline-none">
+                            </div>
+                            <div class="text-slate-600 text-2xl">×</div>
+                            <div class="flex-1">
+                                <input type="number" 
+                                       id="reps-${i}" 
+                                       value="${sessionData.sets[i]?.reps || ''}" 
+                                       placeholder="Reps"
+                                       class="w-full bg-slate-900 text-white text-xl font-black p-3 rounded-lg border border-slate-700 outline-none">
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -332,7 +339,7 @@
                 return `<div class="min-h-screen p-6 pb-32 animate-fade-in">
                     <button onclick="app.activeExercise = null; app.render()" class="mb-6 font-bold text-slate-400 uppercase text-xs tracking-widest">← Back</button>
                     <h1 class="text-3xl font-black mb-2">${this.activeExercise.name}</h1>
-                    <p class="text-slate-500 font-bold mb-8 uppercase tracking-widest text-sm">${this.activeExercise.sets} Sets x ${this.activeExercise.reps}</p>
+                    <p class="text-slate-500 font-bold mb-8 uppercase tracking-widest text-sm">${this.activeExercise.sets} Sets</p>
                     ${lastSessionHTML}
                     <div class="space-y-3 mb-6">
                         ${setsHTML}
@@ -411,15 +418,18 @@
                 const sets = [];
                 for (let i = 0; i < this.activeExercise.sets; i++) {
                     const weightInput = document.getElementById(`weight-${i}`);
+                    const repsInput = document.getElementById(`reps-${i}`);
                     sets.push({
-                        weight: weightInput ? weightInput.value : ''
+                        weight: weightInput ? weightInput.value : '',
+                        reps: repsInput ? repsInput.value : ''
                     });
                 }
                 
                 this.workoutSession.exercises[this.activeExercise.id] = {
                     sets: sets,
                     notes: document.getElementById('notesInput').value,
-                    date: new Date().toISOString()
+                    date: new Date().toISOString(),
+                    completed: true  // Auto-mark as complete when saved
                 };
                 
                 this.activeExercise = null;
@@ -435,7 +445,7 @@
                 const exercise = this.currentWorkout.exercises.find(ex => ex.id === id);
                 if (!this.workoutSession.exercises[id]) {
                     this.workoutSession.exercises[id] = { 
-                        sets: Array(exercise.sets).fill().map(() => ({ weight: '' })),
+                        sets: Array(exercise.sets).fill().map(() => ({ weight: '', reps: '' })),
                         notes: '',
                         date: new Date().toISOString(),
                         completed: true
@@ -472,7 +482,7 @@
                                     ${data.sets.map((set, i) => `
                                         <div class="flex justify-between items-center text-sm">
                                             <span class="text-slate-400">Set ${i + 1}</span>
-                                            <span class="font-black text-blue-400">${set.weight || '—'} kg</span>
+                                            <span class="font-black text-blue-400">${set.weight || '—'} kg × ${set.reps || '—'} reps</span>
                                         </div>
                                     `).join('')}
                                 </div>
