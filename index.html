@@ -273,55 +273,76 @@
             renderWorkoutList() {
                 const exerciseCards = this.currentWorkout.exercises.map(exercise => {
                     const sessionData = this.workoutSession.exercises[exercise.id];
+                    const isComplete = sessionData?.completed || false;
+                    
                     return `<div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4 mb-3 border border-slate-700/50">
                         <button onclick="app.activeExercise = ${JSON.stringify(exercise).replace(/"/g, '&quot;')}; app.render()" class="flex-1 text-left">
                             <h3 class="font-bold text-lg">${exercise.name}</h3>
                             <div class="text-[10px] font-bold text-slate-500 uppercase">${exercise.sets} SETS • ${exercise.reps} REPS</div>
                         </button>
-                        <button onclick="app.toggleExerciseQuick('${exercise.id}', event)" class="text-3xl">${sessionData?.completed ? '✅' : '⚪'}</button>
+                        <button onclick="app.toggleExerciseQuick('${exercise.id}', event)" class="text-3xl">${isComplete ? '✅' : '⚪'}</button>
                     </div>`;
                 }).join('');
                 return `<div class="min-h-screen pb-24 animate-fade-in"><div class="${this.currentWorkout.color} p-6 rounded-b-2xl mb-4 shadow-xl"><button onclick="app.currentWorkout = null; app.render()" class="mb-4 bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← QUIT</button><h1 class="text-2xl font-black uppercase tracking-tight">${this.currentWorkout.name}</h1><p class="text-white/80 text-sm font-medium">${this.currentWorkout.subtitle}</p></div><div class="px-4">${exerciseCards}</div><div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-lg border-t border-slate-800"><button onclick="app.finishWorkout()" class="w-full bg-green-600 py-4 rounded-2xl font-black shadow-lg uppercase">Finish Session</button></div></div>`;
             }
 
             renderExerciseDetail() {
-                const sessionData = this.workoutSession.exercises[this.activeExercise.id] || { weight: '', notes: '', completed: false };
+                const sessionData = this.workoutSession.exercises[this.activeExercise.id] || { 
+                    sets: Array(this.activeExercise.sets).fill().map(() => ({ weight: '' })),
+                    notes: ''
+                };
                 
                 // Find last session data for this exercise
                 let lastSessionData = null;
                 for (let history of this.workoutHistory) {
                     if (history.exercises[this.activeExercise.id]) {
-                        lastSessionData = {
-                            weight: history.exercises[this.activeExercise.id].weight,
-                            date: history.date
-                        };
+                        lastSessionData = history.exercises[this.activeExercise.id];
                         break;
                     }
                 }
 
-                const lastSessionHTML = lastSessionData && lastSessionData.weight ? `
+                const lastSessionHTML = lastSessionData && lastSessionData.sets ? `
                     <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl mb-6">
-                        <div class="text-blue-400 text-xs font-bold uppercase mb-1">Last Session</div>
-                        <div class="text-white font-black text-lg">${lastSessionData.weight} kg</div>
-                        <div class="text-blue-300 text-xs mt-1">${this.getDaysAgo(lastSessionData.date)}</div>
+                        <div class="text-blue-400 text-xs font-bold uppercase mb-2">Last Session - ${this.getDaysAgo(lastSessionData.date || this.workoutHistory[0].date)}</div>
+                        <div class="space-y-1 mb-3">
+                            ${lastSessionData.sets.map((set, i) => `
+                                <div class="text-white text-sm">Set ${i + 1}: <span class="font-black">${set.weight || '—'} kg</span></div>
+                            `).join('')}
+                        </div>
+                        ${lastSessionData.notes ? `<div class="text-blue-300 text-xs italic mt-2">"${lastSessionData.notes}"</div>` : ''}
                     </div>
                 ` : '';
 
-                return `<div class="min-h-screen p-6 animate-fade-in">
+                const setsHTML = Array(this.activeExercise.sets).fill().map((_, i) => `
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex items-center gap-3">
+                        <div class="flex-shrink-0 w-16">
+                            <div class="text-slate-400 text-xs font-bold uppercase">Set ${i + 1}</div>
+                            <div class="text-slate-500 text-[10px]">${this.activeExercise.reps}</div>
+                        </div>
+                        <div class="flex-1">
+                            <input type="number" 
+                                   id="weight-${i}" 
+                                   value="${sessionData.sets[i]?.weight || ''}" 
+                                   placeholder="Weight"
+                                   class="w-full bg-slate-900 text-white text-2xl font-black p-3 rounded-lg border border-slate-700 outline-none">
+                        </div>
+                    </div>
+                `).join('');
+
+                return `<div class="min-h-screen p-6 pb-32 animate-fade-in">
                     <button onclick="app.activeExercise = null; app.render()" class="mb-6 font-bold text-slate-400 uppercase text-xs tracking-widest">← Back</button>
                     <h1 class="text-3xl font-black mb-2">${this.activeExercise.name}</h1>
                     <p class="text-slate-500 font-bold mb-8 uppercase tracking-widest text-sm">${this.activeExercise.sets} Sets x ${this.activeExercise.reps}</p>
                     ${lastSessionHTML}
-                    <div class="space-y-6">
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Weight (kg)</label>
-                            <input type="number" id="weightInput" value="${sessionData.weight}" placeholder="0" class="w-full bg-slate-900 text-4xl font-black p-4 rounded-xl border border-slate-700 outline-none">
-                        </div>
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Notes</label>
-                            <textarea id="notesInput" placeholder="How did it feel?" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 h-24 outline-none resize-none">${sessionData.notes || ''}</textarea>
-                        </div>
-                        <button onclick="app.saveDetailsAndBack()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl uppercase">Done</button>
+                    <div class="space-y-3 mb-6">
+                        ${setsHTML}
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Notes</label>
+                        <textarea id="notesInput" placeholder="How did it feel?" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 h-24 outline-none resize-none">${sessionData.notes || ''}</textarea>
+                    </div>
+                    <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800">
+                        <button onclick="app.saveExerciseWithSets()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl uppercase">Done</button>
                     </div>
                 </div>`;
             }
@@ -386,10 +407,39 @@
                 this.activeExercise = null; this.render();
             }
 
+            saveExerciseWithSets() {
+                const sets = [];
+                for (let i = 0; i < this.activeExercise.sets; i++) {
+                    const weightInput = document.getElementById(`weight-${i}`);
+                    sets.push({
+                        weight: weightInput ? weightInput.value : ''
+                    });
+                }
+                
+                this.workoutSession.exercises[this.activeExercise.id] = {
+                    sets: sets,
+                    notes: document.getElementById('notesInput').value,
+                    date: new Date().toISOString()
+                };
+                
+                this.activeExercise = null;
+                this.render();
+            }
+
+            toggleSetComplete(setIndex) {
+                // Removed - no longer needed
+            }
+
             toggleExerciseQuick(id, e) {
                 e.stopPropagation();
+                const exercise = this.currentWorkout.exercises.find(ex => ex.id === id);
                 if (!this.workoutSession.exercises[id]) {
-                    this.workoutSession.exercises[id] = { weight: '', notes: '', completed: true };
+                    this.workoutSession.exercises[id] = { 
+                        sets: Array(exercise.sets).fill().map(() => ({ weight: '' })),
+                        notes: '',
+                        date: new Date().toISOString(),
+                        completed: true
+                    };
                 } else {
                     this.workoutSession.exercises[id].completed = !this.workoutSession.exercises[id].completed;
                 }
@@ -405,7 +455,6 @@
                 }
 
                 const exercisesList = Object.entries(historyItem.exercises).map(([exerciseId, data]) => {
-                    // Try to find the exercise name from current workouts
                     let exerciseName = exerciseId;
                     for (let workout of Object.values(this.workouts)) {
                         const ex = workout.exercises.find(e => e.id === exerciseId);
@@ -417,10 +466,18 @@
 
                     return `
                         <div class="bg-slate-800 p-4 rounded-lg border border-slate-700/50">
-                            <h3 class="font-bold text-lg mb-2">${exerciseName}</h3>
-                            ${data.weight ? `<div class="text-blue-400 font-black text-2xl mb-2">${data.weight} kg</div>` : '<div class="text-slate-500 text-sm mb-2">No weight saved</div>'}
-                            ${data.notes ? `<div class="text-slate-400 text-sm italic">"${data.notes}"</div>` : ''}
-                            ${data.completed ? '<div class="text-green-500 text-xs mt-2 font-bold uppercase">✓ Completed</div>' : ''}
+                            <h3 class="font-bold text-lg mb-3">${exerciseName}</h3>
+                            ${data.sets ? `
+                                <div class="space-y-2 mb-3">
+                                    ${data.sets.map((set, i) => `
+                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="text-slate-400">Set ${i + 1}</span>
+                                            <span class="font-black text-blue-400">${set.weight || '—'} kg</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : (data.weight ? `<div class="text-blue-400 font-black text-2xl mb-2">${data.weight} kg</div>` : '<div class="text-slate-500 text-sm mb-2">No weight saved</div>')}
+                            ${data.notes ? `<div class="text-slate-400 text-sm italic mt-2">"${data.notes}"</div>` : ''}
                         </div>
                     `;
                 }).join('');
