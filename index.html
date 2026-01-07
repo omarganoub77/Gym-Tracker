@@ -545,7 +545,6 @@
     </script>
 </body>
 </html> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -807,11 +806,11 @@
                         data-workout-id="${workout.id}"
                         data-workout-index="${index}"
                         class="workout-card bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700/50 mb-4 transition-all ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
-                        ${this.editMode ? `ondragstart="app.handleDragStart(event, '${workout.id}')" ondragend="app.handleDragEnd(event)" ondragover="app.handleDragOver(event, ${index})" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, ${index})"` : ''}
+                        ${this.editMode ? `ondragstart="return app.handleDragStart(event, '${workout.id}')" ondragend="app.handleDragEnd(event)" ondragover="app.handleDragOver(event, ${index})" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, ${index})"` : ''}
                     >
                         <div class="p-5 flex items-center justify-between">
                             <div class="flex items-center gap-3 flex-1">
-                                ${this.editMode ? `<div class="cursor-move text-slate-500 hover:text-slate-300 text-2xl" title="Drag to reorder">☰</div>` : ''}
+                                ${this.editMode ? `<div class="cursor-move text-slate-500 hover:text-slate-300 text-2xl select-none" title="Drag to reorder" draggable="false">☰</div>` : ''}
                                 <button onclick="app.startWorkout('${workout.id}')" class="flex items-center gap-4 flex-1 text-left ${this.editMode ? 'opacity-50 pointer-events-none' : ''}">
                                     <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-inner">🏋️</div>
                                     <div>
@@ -882,14 +881,14 @@
                             data-exercise-index="${index}"
                             data-workout-id="${workout.id}"
                             class="exercise-card flex items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700 transition-all ${isDragging ? 'dragging' : ''} ${isDragOver ? 'drag-over' : ''}"
-                            ondragstart="app.handleExerciseDragStart(event, '${workout.id}', '${ex.id}')"
+                            ondragstart="return app.handleExerciseDragStart(event, '${workout.id}', '${ex.id}')"
                             ondragend="app.handleExerciseDragEnd(event)"
                             ondragover="app.handleExerciseDragOver(event, '${workout.id}', ${index})"
                             ondragleave="app.handleExerciseDragLeave(event)"
                             ondrop="app.handleExerciseDrop(event, '${workout.id}', ${index})"
                         >
                             <div class="flex items-center gap-3 flex-1">
-                                <div class="cursor-move text-slate-500 hover:text-slate-300 text-lg" title="Drag to reorder">☰</div>
+                                <div class="cursor-move text-slate-500 hover:text-slate-300 text-lg select-none" title="Drag to reorder" draggable="false">☰</div>
                                 <div>
                                     <div class="text-white font-bold text-sm">${ex.name}</div>
                                     <div class="text-slate-400 text-xs">${ex.sets} sets • ${ex.reps}</div>
@@ -1276,33 +1275,55 @@
 
             // Drag and drop handlers
             handleDragStart(event, workoutId) {
+                // Allow drag from anywhere on the card, including the icon
+                // Only prevent if clicking directly on action buttons
+                if (event.target.closest('button') && !event.target.closest('.workout-card') && event.target.tagName !== 'DIV') {
+                    event.preventDefault();
+                    return false;
+                }
                 this.draggedWorkoutId = workoutId;
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', workoutId);
-                // Add dragging class for visual feedback
                 event.currentTarget.classList.add('dragging');
+                return true;
             }
 
             handleDragEnd(event) {
                 event.currentTarget.classList.remove('dragging');
+                // Clear all drag-over classes
+                document.querySelectorAll('.workout-card.drag-over').forEach(el => el.classList.remove('drag-over'));
                 this.draggedWorkoutId = null;
                 this.dragOverIndex = null;
-                // Re-render to clear visual feedback
-                this.render();
             }
 
             handleDragOver(event, index) {
                 event.preventDefault();
+                event.stopPropagation();
                 event.dataTransfer.dropEffect = 'move';
-                if (this.draggedWorkoutId && this.draggedWorkoutId !== this.getWorkoutOrder()[index]) {
-                    this.dragOverIndex = index;
-                    this.render();
+                const currentOrder = this.getWorkoutOrder();
+                if (this.draggedWorkoutId && this.draggedWorkoutId !== currentOrder[index]) {
+                    // Update visual feedback without re-rendering
+                    if (this.dragOverIndex !== index) {
+                        // Remove previous drag-over class
+                        if (this.dragOverIndex !== null) {
+                            const prevCard = document.querySelector(`[data-workout-index="${this.dragOverIndex}"]`);
+                            if (prevCard) prevCard.classList.remove('drag-over');
+                        }
+                        // Add drag-over class to current target
+                        const currentCard = event.currentTarget;
+                        currentCard.classList.add('drag-over');
+                        this.dragOverIndex = index;
+                    }
                 }
             }
 
             handleDragLeave(event) {
-                // Only clear if we're leaving the workout card area
-                if (!event.currentTarget.contains(event.relatedTarget)) {
+                // Only clear if we're actually leaving the element
+                const rect = event.currentTarget.getBoundingClientRect();
+                const x = event.clientX;
+                const y = event.clientY;
+                if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                    event.currentTarget.classList.remove('drag-over');
                     this.dragOverIndex = null;
                 }
             }
@@ -1339,33 +1360,56 @@
 
             // Exercise drag and drop handlers
             handleExerciseDragStart(event, workoutId, exerciseId) {
+                // Allow drag from anywhere on the card, including the icon
+                // Only prevent if clicking directly on action buttons (Edit/Delete)
+                if (event.target.closest('button') && (event.target.textContent === 'Edit' || event.target.textContent === '✕')) {
+                    event.preventDefault();
+                    return false;
+                }
                 this.draggedExerciseId = exerciseId;
                 this.draggedExerciseWorkoutId = workoutId;
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', exerciseId);
                 event.currentTarget.classList.add('dragging');
+                return true;
             }
 
             handleExerciseDragEnd(event) {
                 event.currentTarget.classList.remove('dragging');
+                // Clear all drag-over classes
+                document.querySelectorAll('.exercise-card.drag-over').forEach(el => el.classList.remove('drag-over'));
                 this.draggedExerciseId = null;
                 this.draggedExerciseWorkoutId = null;
                 this.dragOverExerciseIndex = null;
-                this.render();
             }
 
             handleExerciseDragOver(event, workoutId, index) {
                 event.preventDefault();
+                event.stopPropagation();
                 event.dataTransfer.dropEffect = 'move';
                 if (this.draggedExerciseId && this.draggedExerciseWorkoutId === workoutId && this.draggedExerciseId !== this.workouts[workoutId].exercises[index]?.id) {
-                    this.dragOverExerciseIndex = index;
-                    this.render();
+                    // Update visual feedback without re-rendering
+                    if (this.dragOverExerciseIndex !== index) {
+                        // Remove previous drag-over class
+                        if (this.dragOverExerciseIndex !== null) {
+                            const prevExercise = document.querySelector(`[data-exercise-index="${this.dragOverExerciseIndex}"][data-workout-id="${workoutId}"]`);
+                            if (prevExercise) prevExercise.classList.remove('drag-over');
+                        }
+                        // Add drag-over class to current target
+                        const currentExercise = event.currentTarget;
+                        currentExercise.classList.add('drag-over');
+                        this.dragOverExerciseIndex = index;
+                    }
                 }
             }
 
             handleExerciseDragLeave(event) {
-                // Only clear if we're leaving the exercise card area
-                if (!event.currentTarget.contains(event.relatedTarget)) {
+                // Only clear if we're actually leaving the element
+                const rect = event.currentTarget.getBoundingClientRect();
+                const x = event.clientX;
+                const y = event.clientY;
+                if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                    event.currentTarget.classList.remove('drag-over');
                     this.dragOverExerciseIndex = null;
                 }
             }
