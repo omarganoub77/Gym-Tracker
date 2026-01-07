@@ -23,11 +23,86 @@
 
     <script>
         const defaultWorkouts = {
-            upper1: { id: 'upper1', name: 'Upper 1', subtitle: 'Strength Focus', color: 'bg-red-500', exercises: [{ id: 'u1e1', name: 'Dumbbell Bench Press', sets: 4, reps: '6-8', muscle: 'Chest' }, { id: 'u1e2', name: 'Cable Row', sets: 4, reps: '6-8', muscle: 'Back' }, { id: 'u1e3', name: 'Overhead Press', sets: 3, reps: '8-10', muscle: 'Shoulders' }] },
-            lower1: { id: 'lower1', name: 'Lower 1', subtitle: 'Strength Focus', color: 'bg-blue-500', exercises: [{ id: 'l1e1', name: 'Belt Squat', sets: 4, reps: '6-8', muscle: 'Quads' }, { id: 'l1e2', name: 'Romanian Deadlift', sets: 3, reps: '8-10', muscle: 'Hamstrings' }] },
-            plyo: { id: 'plyo', name: 'Plyo/Power', subtitle: 'Conditioning', color: 'bg-purple-500', exercises: [{ id: 'p1', name: 'Box Jumps', sets: 4, reps: '8', muscle: 'Power' }] },
-            upper2: { id: 'upper2', name: 'Upper 2', subtitle: 'Hypertrophy', color: 'bg-orange-500', exercises: [{ id: 'u2e1', name: 'Incline Press', sets: 4, reps: '10-12', muscle: 'Chest' }] },
-            lower2: { id: 'lower2', name: 'Lower 2', subtitle: 'Hypertrophy', color: 'bg-green-500', exercises: [{ id: 'l2e1', name: 'Leg Press', sets: 4, reps: '12-15', muscle: 'Quads' }] }
+            upper1: {
+                id: 'upper1',
+                name: 'Upper 1',
+                subtitle: 'Strength Focus',
+                color: 'bg-red-500',
+                exercises: [
+                    { id: 'u1e1', name: 'Dumbbell Bench Press', sets: 4, reps: '6-8', rest: 180, muscle: 'Chest' },
+                    { id: 'u1e2', name: 'Cable/Machine Row', sets: 4, reps: '6-8', rest: 180, muscle: 'Back' },
+                    { id: 'u1e3', name: 'Overhead Press', sets: 3, reps: '8-10', rest: 120, muscle: 'Shoulders' },
+                    { id: 'u1e4', name: 'Pull-ups/Lat Pulldown', sets: 3, reps: '8-10', rest: 120, muscle: 'Back' },
+                    { id: 'u1e5', name: 'Dumbbell Curl', sets: 3, reps: '10-12', rest: 90, muscle: 'Biceps' },
+                    { id: 'u1e6', name: 'Preacher Curl', sets: 3, reps: '10-12', rest: 90, muscle: 'Biceps' },
+                    { id: 'u1e7', name: 'Tricep Dips', sets: 3, reps: '10-12', rest: 90, muscle: 'Triceps' },
+                    { id: 'u1e8', name: 'Face Pulls', sets: 3, reps: '15-20', rest: 60, muscle: 'Rear Delts' }
+                ]
+            },
+            lower1: {
+                id: 'lower1',
+                name: 'Lower 1',
+                subtitle: 'Strength Focus',
+                color: 'bg-blue-500',
+                exercises: [
+                    { id: 'l1e1', name: 'Belt Squat', sets: 4, reps: '6-8', rest: 180, muscle: 'Quads' },
+                    { id: 'l1e2', name: 'Romanian Deadlift', sets: 3, reps: '8-10', rest: 180, muscle: 'Hamstrings' },
+                    { id: 'l1e3', name: 'Leg Press', sets: 3, reps: '10-12', rest: 120, muscle: 'Quads' },
+                    { id: 'l1e4', name: 'Leg Curl', sets: 3, reps: '10-12', rest: 90, muscle: 'Hamstrings' },
+                    { id: 'l1e5', name: 'Walking Lunges', sets: 3, reps: '12 each', rest: 90, muscle: 'Quads/Glutes' },
+                    { id: 'l1e6', name: 'Standing Calf Raise', sets: 4, reps: '12-15', rest: 60, muscle: 'Calves' },
+                    { id: 'l1e7', name: 'Plank', sets: 3, reps: '60s', rest: 60, muscle: 'Core' }
+                ]
+            },
+            plyo: {
+                id: 'plyo',
+                name: 'Plyo/Power',
+                subtitle: 'Conditioning',
+                color: 'bg-purple-500',
+                exercises: [
+                    { id: 'p1', name: 'Box Jumps', sets: 4, reps: '8', rest: 120, muscle: 'Power' },
+                    { id: 'p2', name: 'Plyometric Push-ups', sets: 3, reps: '10', rest: 90, muscle: 'Upper Power' },
+                    { id: 'p3', name: 'Lateral Jumps', sets: 3, reps: '10 each', rest: 90, muscle: 'Power' },
+                    { id: 'p4', name: 'Burpees', sets: 4, reps: '15', rest: 90, muscle: 'Conditioning' },
+                    { id: 'p5', name: 'Ladder Drills (High Knees)', sets: 4, reps: '20 yards', rest: 60, muscle: 'Agility' },
+                    { id: 'p6', name: 'Ladder Drills (In-Out)', sets: 4, reps: '20 yards', rest: 60, muscle: 'Agility' },
+                    { id: 'p7', name: 'Broad Jumps', sets: 3, reps: '8', rest: 120, muscle: 'Power' },
+                    { id: 'p8', name: 'Medicine Ball Slams', sets: 3, reps: '12', rest: 60, muscle: 'Power' },
+                    { id: 'p9', name: 'Sprint Intervals', sets: 6, reps: '50m', rest: 180, muscle: 'Speed' },
+                    { id: 'p10', name: 'Jump Rope', sets: 3, reps: '60s', rest: 60, muscle: 'Conditioning' }
+                ]
+            },
+            upper2: {
+                id: 'upper2',
+                name: 'Upper 2',
+                subtitle: 'Hypertrophy Focus',
+                color: 'bg-orange-500',
+                exercises: [
+                    { id: 'u2e1', name: 'Incline Dumbbell Press', sets: 4, reps: '10-12', rest: 120, muscle: 'Chest' },
+                    { id: 'u2e2', name: 'Cable Row', sets: 4, reps: '10-12', rest: 120, muscle: 'Back' },
+                    { id: 'u2e3', name: 'Dumbbell Shoulder Press', sets: 3, reps: '10-12', rest: 90, muscle: 'Shoulders' },
+                    { id: 'u2e4', name: 'Lat Pulldown (Wide)', sets: 3, reps: '12-15', rest: 90, muscle: 'Back' },
+                    { id: 'u2e5', name: 'Cable Flyes', sets: 3, reps: '12-15', rest: 60, muscle: 'Chest' },
+                    { id: 'u2e6', name: 'Hammer Curls', sets: 3, reps: '12-15', rest: 60, muscle: 'Biceps' },
+                    { id: 'u2e7', name: 'Cable Curl', sets: 3, reps: '12-15', rest: 60, muscle: 'Biceps' },
+                    { id: 'u2e8', name: 'Overhead Tricep Extension', sets: 3, reps: '12-15', rest: 60, muscle: 'Triceps' }
+                ]
+            },
+            lower2: {
+                id: 'lower2',
+                name: 'Lower 2',
+                subtitle: 'Hypertrophy Focus',
+                color: 'bg-green-500',
+                exercises: [
+                    { id: 'l2e1', name: 'Belt Squat', sets: 4, reps: '10-12', rest: 120, muscle: 'Quads' },
+                    { id: 'l2e2', name: 'Leg Extension', sets: 4, reps: '12-15', rest: 90, muscle: 'Quads' },
+                    { id: 'l2e3', name: 'Bulgarian Split Squat', sets: 3, reps: '10-12 each', rest: 90, muscle: 'Quads/Glutes' },
+                    { id: 'l2e4', name: 'Leg Press', sets: 3, reps: '12-15', rest: 90, muscle: 'Quads' },
+                    { id: 'l2e5', name: 'Seated Leg Curl', sets: 3, reps: '12-15', rest: 90, muscle: 'Hamstrings' },
+                    { id: 'l2e6', name: 'Seated Calf Raise', sets: 4, reps: '15-20', rest: 60, muscle: 'Calves' },
+                    { id: 'l2e7', name: 'Hanging Leg Raise', sets: 3, reps: '12-15', rest: 60, muscle: 'Core' }
+                ]
+            }
         };
 
         class GymApp {
@@ -41,6 +116,7 @@
                 this.editingExercise = null;
                 this.editingWorkoutHeader = null;
                 this.showMenu = false;
+                this.viewingHistory = null;
                 this.render();
             }
 
@@ -71,7 +147,9 @@
 
             render() {
                 const app = document.getElementById('app');
-                if (this.editingWorkoutHeader) {
+                if (this.viewingHistory) {
+                    app.innerHTML = this.renderHistoryDetail();
+                } else if (this.editingWorkoutHeader) {
                     app.innerHTML = this.renderWorkoutHeaderEdit();
                 } else if (this.editingExercise) {
                     app.innerHTML = this.renderExerciseEdit();
@@ -82,6 +160,38 @@
                 } else {
                     app.innerHTML = this.renderHome();
                 }
+                
+                // Wait for DOM to be ready
+                setTimeout(() => this.attachDeleteButtons(), 0);
+            }
+
+            attachDeleteButtons() {
+                console.log('attachDeleteButtons called');
+                // Attach delete buttons
+                const deleteButtons = document.querySelectorAll('.delete-history-btn');
+                console.log('Found delete buttons:', deleteButtons.length);
+                deleteButtons.forEach(button => {
+                    console.log('Attaching to button:', button);
+                    button.onclick = (e) => {
+                        console.log('DELETE CLICKED!');
+                        e.stopPropagation();
+                        const index = parseInt(button.getAttribute('data-index'));
+                        // Remove confirm since it's blocked in sandbox
+                        this.workoutHistory.splice(index, 1);
+                        localStorage.setItem('gymHistory', JSON.stringify(this.workoutHistory));
+                        this.render();
+                    };
+                });
+
+                // Attach view buttons
+                const viewButtons = document.querySelectorAll('.view-history-btn');
+                console.log('Found view buttons:', viewButtons.length);
+                viewButtons.forEach(button => {
+                    button.onclick = () => {
+                        const index = parseInt(button.getAttribute('data-index'));
+                        this.viewHistory(index);
+                    };
+                });
             }
 
             renderHome() {
@@ -101,18 +211,21 @@
                     </div>
                 `).join('');
 
-                const historySection = this.workoutHistory.length > 0 ? `
+                const historyHTML = this.workoutHistory.length > 0 ? `
                     <div class="p-4 mt-4">
-                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">🕒 Recent History</h2>
-                        <div class="space-y-3">
-                            ${this.workoutHistory.slice(0, 5).map(w => `
-                                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
-                                    <div class="flex justify-between items-center">
-                                        <span class="font-bold">${w.workoutName}</span>
-                                        <span class="text-xs text-slate-500">${new Date(w.date).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            `).join('')}
+                        <h2 class="text-xl font-bold mb-4">Recent Sessions</h2>
+                        <div class="space-y-3" id="historyList">
+                            ${this.workoutHistory.slice(0, 5).map((w, index) => `
+                                <div class="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
+                                    <button class="view-history-btn w-full p-4 flex justify-between items-center text-left hover:bg-slate-800 transition-all" data-index="${index}">
+                                        <div>
+                                            <div class="font-bold">${w.workoutName}</div>
+                                            <div class="text-slate-500 text-xs mt-1">${new Date(w.date).toLocaleDateString()} • ${Object.keys(w.exercises).length} exercises</div>
+                                        </div>
+                                        <div class="text-slate-600 text-xl">→</div>
+                                    </button>
+                                    <button class="delete-history-btn w-full bg-red-500/10 text-red-400 py-2 text-xs font-bold uppercase hover:bg-red-500/20 transition-all border-t border-slate-700/50" data-index="${index}">Delete</button>
+                                </div>`).join('')}
                         </div>
                     </div>` : '';
 
@@ -120,14 +233,14 @@
                     <div class="min-h-screen pb-20 animate-fade-in">
                         <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                             <div class="flex items-center justify-between mb-4">
-                                <h1 class="text-3xl font-black tracking-tight">GYM TRACKER</h1>
+                                <h1 class="text-3xl font-black tracking-tight uppercase">Gym Tracker</h1>
                                 <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg">⚙️</button>
                             </div>
                             <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
                         </div>
-                        ${this.showMenu ? `<div class="p-4 -mt-6"><button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl flex items-center justify-center gap-3 font-bold shadow-2xl">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button></div>` : '<div class="h-6"></div>'}
+                        ${this.showMenu ? `<div class="p-4 -mt-6"><button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button></div>` : '<div class="h-6"></div>'}
                         <div class="px-4">${workoutCards}</div>
-                        ${historySection}
+                        ${historyHTML}
                     </div>`;
             }
 
@@ -135,13 +248,13 @@
                 return `<div class="p-4 bg-slate-900/80 space-y-2 border-t border-slate-700/50">
                     ${workout.exercises.map(ex => `
                         <div class="flex items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700">
-                            <div><div class="text-white font-bold text-sm">${ex.name}</div><div class="text-slate-400 text-xs">${ex.sets} sets • ${ex.reps} reps</div></div>
+                            <div><div class="text-white font-bold text-sm">${ex.name}</div><div class="text-slate-400 text-xs">${ex.sets} sets • ${ex.reps}</div></div>
                             <div class="flex gap-2">
                                 <button onclick="app.editingExercise = { workoutId: '${workout.id}', exercise: ${JSON.stringify(ex).replace(/"/g, '&quot;')} }; app.render()" class="bg-blue-500/10 text-blue-400 p-2 rounded text-xs font-bold uppercase">Edit</button>
                                 <button onclick="app.deleteExercise('${workout.id}', '${ex.id}')" class="bg-red-500/10 text-red-400 p-2 rounded text-xs font-bold uppercase">✕</button>
                             </div>
                         </div>`).join('')}
-                    <button onclick="app.addExercise('${workout.id}')" class="w-full bg-blue-600/10 text-blue-400 p-3 rounded-lg border border-blue-600/20 font-bold text-sm">+ Add New Exercise</button>
+                    <button onclick="app.addExercise('${workout.id}')" class="w-full bg-blue-600/10 text-blue-400 p-3 rounded-lg font-bold text-sm">+ Add New Exercise</button>
                 </div>`;
             }
 
@@ -149,10 +262,8 @@
                 const w = this.workouts[this.editingWorkoutHeader];
                 return `<div class="fixed inset-0 bg-black/90 flex items-center justify-center p-6 z-50 animate-fade-in"><div class="bg-slate-800 p-6 rounded-3xl w-full max-w-md border border-slate-700">
                     <h2 class="text-xl font-black mb-6 uppercase">Rename Workout</h2>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Workout Name</label>
-                    <input id="hName" type="text" value="${w.name}" class="w-full bg-slate-900 p-4 rounded-xl mb-4 border border-slate-700 outline-none">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">Subtitle</label>
-                    <input id="hSub" type="text" value="${w.subtitle}" class="w-full bg-slate-900 p-4 rounded-xl mb-6 border border-slate-700 outline-none">
+                    <input id="hName" type="text" value="${w.name}" class="w-full bg-slate-900 p-4 rounded-xl mb-4 border border-slate-700 outline-none" placeholder="Name">
+                    <input id="hSub" type="text" value="${w.subtitle}" class="w-full bg-slate-900 p-4 rounded-xl mb-6 border border-slate-700 outline-none" placeholder="Subtitle">
                     <button onclick="app.saveWorkoutHeader()" class="w-full bg-blue-600 p-4 rounded-xl font-black mb-2 shadow-lg">SAVE CHANGES</button>
                     <button onclick="app.editingWorkoutHeader = null; app.render()" class="w-full text-slate-500 font-bold py-2">CANCEL</button>
                 </div></div>`;
@@ -161,58 +272,82 @@
             renderWorkoutList() {
                 const exerciseCards = this.currentWorkout.exercises.map(exercise => {
                     const sessionData = this.workoutSession.exercises[exercise.id];
-                    const isComplete = sessionData?.completed;
-                    return `<div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4 mb-3 border border-slate-700/50 shadow-sm">
+                    return `<div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4 mb-3 border border-slate-700/50">
                         <button onclick="app.activeExercise = ${JSON.stringify(exercise).replace(/"/g, '&quot;')}; app.render()" class="flex-1 text-left">
                             <h3 class="font-bold text-lg">${exercise.name}</h3>
-                            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${exercise.sets} SETS • ${exercise.reps} REPS</div>
+                            <div class="text-[10px] font-bold text-slate-500 uppercase">${exercise.sets} SETS • ${exercise.reps} REPS</div>
                         </button>
-                        <button onclick="app.toggleExerciseQuick('${exercise.id}', event)" class="text-3xl">${isComplete ? '✅' : '⚪'}</button>
+                        <button onclick="app.toggleExerciseQuick('${exercise.id}', event)" class="text-3xl">${sessionData?.completed ? '✅' : '⚪'}</button>
                     </div>`;
                 }).join('');
-                return `<div class="min-h-screen pb-24 animate-fade-in">
-                    <div class="${this.currentWorkout.color} p-6 rounded-b-2xl shadow-xl mb-4">
-                        <button onclick="app.currentWorkout = null; app.workoutSession = null; app.render()" class="mb-4 bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold">← QUIT SESSION</button>
-                        <h1 class="text-2xl font-black">${this.currentWorkout.name}</h1>
-                        <p class="text-white/80 text-sm font-medium">${this.currentWorkout.subtitle}</p>
-                    </div>
-                    <div class="px-4">${exerciseCards}</div>
-                    <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-lg border-t border-slate-800">
-                        <button onclick="app.finishWorkout()" class="w-full bg-green-600 py-4 rounded-2xl font-black shadow-lg">FINISH WORKOUT</button>
-                    </div>
-                </div>`;
+                return `<div class="min-h-screen pb-24 animate-fade-in"><div class="${this.currentWorkout.color} p-6 rounded-b-2xl mb-4 shadow-xl"><button onclick="app.currentWorkout = null; app.render()" class="mb-4 bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← QUIT</button><h1 class="text-2xl font-black uppercase tracking-tight">${this.currentWorkout.name}</h1><p class="text-white/80 text-sm font-medium">${this.currentWorkout.subtitle}</p></div><div class="px-4">${exerciseCards}</div><div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-lg border-t border-slate-800"><button onclick="app.finishWorkout()" class="w-full bg-green-600 py-4 rounded-2xl font-black shadow-lg uppercase">Finish Session</button></div></div>`;
             }
 
             renderExerciseDetail() {
                 const sessionData = this.workoutSession.exercises[this.activeExercise.id] || { weight: '', notes: '', completed: false };
+                
+                // Find last session data for this exercise
+                let lastSessionData = null;
+                for (let history of this.workoutHistory) {
+                    if (history.exercises[this.activeExercise.id]) {
+                        lastSessionData = {
+                            weight: history.exercises[this.activeExercise.id].weight,
+                            date: history.date
+                        };
+                        break;
+                    }
+                }
+
+                const lastSessionHTML = lastSessionData && lastSessionData.weight ? `
+                    <div class="bg-blue-500/10 border border-blue-500/30 p-4 rounded-xl mb-6">
+                        <div class="text-blue-400 text-xs font-bold uppercase mb-1">Last Session</div>
+                        <div class="text-white font-black text-lg">${lastSessionData.weight} kg</div>
+                        <div class="text-blue-300 text-xs mt-1">${this.getDaysAgo(lastSessionData.date)}</div>
+                    </div>
+                ` : '';
+
                 return `<div class="min-h-screen p-6 animate-fade-in">
-                    <button onclick="app.activeExercise = null; app.render()" class="mb-6 font-bold text-slate-400 uppercase text-xs tracking-widest">← Back to List</button>
-                    <h1 class="text-3xl font-black mb-1">${this.activeExercise.name}</h1>
-                    <p class="text-slate-500 font-bold mb-8 uppercase tracking-widest text-sm">${this.activeExercise.sets} Sets x ${this.activeExercise.reps} Reps</p>
+                    <button onclick="app.activeExercise = null; app.render()" class="mb-6 font-bold text-slate-400 uppercase text-xs tracking-widest">← Back</button>
+                    <h1 class="text-3xl font-black mb-2">${this.activeExercise.name}</h1>
+                    <p class="text-slate-500 font-bold mb-8 uppercase tracking-widest text-sm">${this.activeExercise.sets} Sets x ${this.activeExercise.reps}</p>
+                    ${lastSessionHTML}
                     <div class="space-y-6">
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
                             <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Weight (kg)</label>
-                            <input type="number" id="weightInput" value="${sessionData.weight}" placeholder="0" class="w-full bg-slate-900 text-4xl font-black p-4 rounded-xl border border-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="number" id="weightInput" value="${sessionData.weight}" placeholder="0" class="w-full bg-slate-900 text-4xl font-black p-4 rounded-xl border border-slate-700 outline-none">
                         </div>
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
                             <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Notes</label>
-                            <textarea id="notesInput" placeholder="Add notes..." class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 h-24 outline-none resize-none focus:ring-2 focus:ring-blue-500">${sessionData.notes || ''}</textarea>
+                            <textarea id="notesInput" placeholder="How did it feel?" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 h-24 outline-none resize-none">${sessionData.notes || ''}</textarea>
                         </div>
-                        <button onclick="app.saveDetailsAndBack()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl">LOG EXERCISE</button>
+                        <button onclick="app.saveDetailsAndBack()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl uppercase">Done</button>
                     </div>
                 </div>`;
             }
 
+            getDaysAgo(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return 'Today';
+                if (diffDays === 1) return 'Yesterday';
+                if (diffDays < 7) return `${diffDays} days ago`;
+                if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+                return date.toLocaleDateString();
+            }
+
             renderExerciseEdit() {
                 const ex = this.editingExercise.exercise;
-                return `<div class="fixed inset-0 bg-black/95 flex items-center justify-center p-6 z-50 animate-fade-in"><div class="bg-slate-800 p-6 rounded-3xl w-full border border-slate-700">
+                return `<div class="fixed inset-0 bg-black flex items-center justify-center p-6 z-50 animate-fade-in"><div class="bg-slate-800 p-6 rounded-3xl w-full max-w-md border border-slate-700">
                     <h2 class="text-xl font-black mb-6 uppercase">Edit Exercise</h2>
-                    <input type="text" id="editExName" value="${ex.name}" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 mb-4 outline-none">
+                    <input id="editExName" type="text" value="${ex.name}" class="w-full bg-slate-900 p-4 rounded-xl mb-4 border border-slate-700 outline-none">
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div><label class="text-[10px] font-bold text-slate-500">SETS</label><input type="number" id="editExSets" value="${ex.sets}" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 outline-none"></div>
                         <div><label class="text-[10px] font-bold text-slate-500">REPS</label><input type="text" id="editExReps" value="${ex.reps}" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 outline-none"></div>
                     </div>
-                    <button onclick="app.saveExEdit()" class="w-full bg-blue-600 p-4 rounded-xl font-black mb-2 shadow-lg">UPDATE</button>
+                    <button onclick="app.saveExEdit()" class="w-full bg-blue-600 p-4 rounded-xl font-black mb-2 shadow-lg uppercase">Update</button>
                     <button onclick="app.editingExercise = null; app.render()" class="w-full text-slate-500 font-bold py-2">CANCEL</button>
                 </div></div>`;
             }
@@ -246,11 +381,7 @@
             }
 
             saveDetailsAndBack() {
-                this.workoutSession.exercises[this.activeExercise.id] = { 
-                    weight: document.getElementById('weightInput').value, 
-                    notes: document.getElementById('notesInput').value,
-                    completed: true 
-                };
+                this.workoutSession.exercises[this.activeExercise.id] = { weight: document.getElementById('weightInput').value, notes: document.getElementById('notesInput').value, completed: true };
                 this.activeExercise = null; this.render();
             }
 
@@ -262,6 +393,83 @@
                     this.workoutSession.exercises[id].completed = !this.workoutSession.exercises[id].completed;
                 }
                 this.render();
+            }
+
+            renderHistoryDetail() {
+                const historyItem = this.workoutHistory.find(h => h.id === this.viewingHistory);
+                if (!historyItem) {
+                    this.viewingHistory = null;
+                    this.render();
+                    return '';
+                }
+
+                const exercisesList = Object.entries(historyItem.exercises).map(([exerciseId, data]) => {
+                    // Try to find the exercise name from current workouts
+                    let exerciseName = exerciseId;
+                    for (let workout of Object.values(this.workouts)) {
+                        const ex = workout.exercises.find(e => e.id === exerciseId);
+                        if (ex) {
+                            exerciseName = ex.name;
+                            break;
+                        }
+                    }
+
+                    return `
+                        <div class="bg-slate-800 p-4 rounded-lg border border-slate-700/50">
+                            <h3 class="font-bold text-lg mb-2">${exerciseName}</h3>
+                            ${data.weight ? `<div class="text-blue-400 font-black text-2xl mb-2">${data.weight} kg</div>` : '<div class="text-slate-500 text-sm mb-2">No weight saved</div>'}
+                            ${data.notes ? `<div class="text-slate-400 text-sm italic">"${data.notes}"</div>` : ''}
+                            ${data.completed ? '<div class="text-green-500 text-xs mt-2 font-bold uppercase">✓ Completed</div>' : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="min-h-screen pb-20 animate-fade-in">
+                        <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 pb-8 rounded-b-2xl shadow-xl mb-4">
+                            <button onclick="app.viewingHistory = null; app.render()" class="mb-4 bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← Back</button>
+                            <h1 class="text-2xl font-black uppercase mb-2">${historyItem.workoutName}</h1>
+                            <div class="text-slate-400 text-sm font-medium">${new Date(historyItem.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        </div>
+                        <div class="px-4 space-y-3">
+                            ${Object.keys(historyItem.exercises).length > 0 ? exercisesList : '<div class="text-center text-slate-500 py-8">No exercises saved</div>'}
+                        </div>
+                    </div>
+                `;
+            }
+
+            viewHistory(index) {
+                this.viewingHistory = this.workoutHistory[index].id;
+                this.render();
+            }
+
+            deleteHistorySession(index) {
+                const confirmed = confirm('Delete this workout session? This cannot be undone.');
+                if(confirmed) {
+                    console.log('Deleting index:', index);
+                    console.log('Before delete:', this.workoutHistory.length);
+                    this.workoutHistory.splice(index, 1);
+                    console.log('After delete:', this.workoutHistory.length);
+                    localStorage.setItem('gymHistory', JSON.stringify(this.workoutHistory));
+                    this.render();
+                }
+            }
+
+            deleteHistory(id) {
+                if(confirm('Delete this workout session? This cannot be undone.')) {
+                    this.workoutHistory = this.workoutHistory.filter(h => h.id !== id);
+                    this.save();
+                    this.viewingHistory = null;
+                    this.render();
+                }
+            }
+
+            deleteExercise(wId, eId) {
+                if(confirm('Delete this exercise?')) {
+                    this.workouts[wId].exercises = this.workouts[wId].exercises.filter(e => e.id !== eId);
+                    this.save(); 
+                    this.render();
+                }
             }
         }
 
