@@ -555,7 +555,7 @@ class GymApp {
                     <div class="flex items-center justify-between mb-4">
                         <h1 class="text-3xl font-black tracking-tight">Gym Tracker</h1>
                         <div class="flex items-center gap-2">
-                            <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" class="bg-white/10 p-2 rounded-lg text-xs font-bold uppercase" title="Change Program">🔄</button>
+                            <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" class="bg-white/10 p-2 rounded-lg text-xs font-bold uppercase" title="Change Program">Change Program</button>
                             <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
                         </div>
                     </div>
