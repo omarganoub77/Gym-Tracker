@@ -1,7 +1,7 @@
 const programTemplates = {
     upperLower: {
         name: 'Upper/Lower Split',
-        description: '5 days: 2 Upper, 2 Lower, 1 Plyo',
+        description: '4 days: 2 Upper, 2 Lower',
         icon: '🏋️',
         workouts: {
             upper1: {
@@ -33,22 +33,6 @@ const programTemplates = {
                     { id: 'l1e5', name: 'Walking Lunges', sets: 3, reps: '12 each', rest: 90, muscle: 'Quads/Glutes' },
                     { id: 'l1e6', name: 'Standing Calf Raise', sets: 4, reps: '12-15', rest: 60, muscle: 'Calves' },
                     { id: 'l1e7', name: 'Plank', sets: 3, reps: '60s', rest: 60, muscle: 'Core' }
-                ]
-            },
-            plyo: {
-                id: 'plyo',
-                name: 'Plyo/Power',
-                subtitle: 'Conditioning',
-                color: 'bg-purple-500',
-                exercises: [
-                    { id: 'p1', name: 'Box Jumps', sets: 4, reps: '8', rest: 120, muscle: 'Power' },
-                    { id: 'p2', name: 'Plyometric Push-ups', sets: 3, reps: '10', rest: 90, muscle: 'Upper Power' },
-                    { id: 'p3', name: 'Lateral Jumps', sets: 3, reps: '10 each', rest: 90, muscle: 'Power' },
-                    { id: 'p4', name: 'Burpees', sets: 4, reps: '15', rest: 90, muscle: 'Conditioning' },
-                    { id: 'p5', name: 'Ladder Drills', sets: 4, reps: '20 yards', rest: 60, muscle: 'Agility' },
-                    { id: 'p6', name: 'Broad Jumps', sets: 3, reps: '8', rest: 120, muscle: 'Power' },
-                    { id: 'p7', name: 'Medicine Ball Slams', sets: 3, reps: '12', rest: 60, muscle: 'Power' },
-                    { id: 'p8', name: 'Sprint Intervals', sets: 6, reps: '50m', rest: 180, muscle: 'Speed' }
                 ]
             },
             upper2: {
