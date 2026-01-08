@@ -1,57 +1,39 @@
-# 💪 Gym Tracker - 5 Day Split
+# 💪 Gym Tracker
 
-A progressive web app for tracking your Upper/Lower split workout program with a dedicated plyometric day.
+A powerful-first progressive web app for tracking your gym workouts with multiple training programs.
 
-## 🏋️ Program Overview
 
-**5-Day Training Split:**
-- Upper Body 1 (Strength Focus)
-- Lower Body 1 (Strength Focus)
-- Plyo/Power (Conditioning)
-- Upper Body 2 (Hypertrophy Focus)
-- Lower Body 2 (Hypertrophy Focus)
+## 🌟 Features
 
-## ✨ Features
+- **5 Pre-built Programs**: Upper/Lower, Push/Pull/Legs, Bro Split, Full Body, or Start Empty
+- **Set-by-Set Tracking**: Log weight and reps for each individual set
+- **Last Session Comparison**: See your previous performance while working out
+- **Workout History**: Review all past sessions with detailed logs
+- **Fully Customizable**: Add, edit, delete workouts and exercises
+- **Drag & Drop**: Reorder workouts and exercises easily
+- **Mobile-Optimized**: Perfect for use in the gym
+- **No Account Required**: All data stored locally on your device
 
-- ✅ Track weights, sets, and reps for every exercise
-- ✅ Quick-complete exercises with one tap
-- ✅ Edit/add/remove exercises anytime
-- ✅ View workout history
-- ✅ All data saved locally on your device
-- ✅ Works offline
-- ✅ Mobile-optimized interface
+### Install as App
+1. Open the link on your phone
+2. **iPhone**: Tap Share → Add to Home Screen
+3. **Android**: Tap Menu → Add to Home Screen
 
-## 📱 Installation
+## 📱 How to Use
 
-### On iPhone/iPad:
-1. Open the app in Safari
-2. Tap the Share button
-3. Select "Add to Home Screen"
-4. Tap "Add"
+1. **First Launch**: Choose your training program
+2. **Start Workout**: Tap a workout to begin
+3. **Log Sets**: Enter weight and reps for each set
+4. **Track Progress**: View last session data while working out
+5. **Review History**: Check past workouts anytime
 
-### On Android:
-1. Open the app in Chrome
-2. Tap the menu (⋮)
-3. Select "Add to Home screen"
-4. Tap "Add"
+## 🛠️ Tech Stack
 
-## 🚀 Usage
-
-1. Select your workout from the home screen
-2. Tap an exercise to log weight and check off sets
-3. Or quickly tap the circle to mark the entire exercise complete
-4. Finish workout to save to history
-5. Edit workouts anytime through the menu
-
-## 🔧 Customization
-
-Use the menu to edit mode where you can:
-- Add new exercises
-- Modify existing exercises (name, sets, reps, rest times)
-- Delete exercises
-- Reorganize your program
-
+- Pure JavaScript (Vanilla JS)
+- Tailwind CSS
+- LocalStorage API
+- Progressive Web App (PWA)
 
 ---
 
-Built for serious lifters who want a simple, distraction-free way to track progress.
+Made with for lifters, by lifters
