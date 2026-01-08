@@ -12,24 +12,76 @@
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkd5bSBUcmFja2VyIiwKICAic2hvcnRfbmFtZSI6ICJHeW0iLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMzYjgyZjYiCn0=">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body { overscroll-behavior: none; background-color: #020617; }
-        input, textarea { font-size: 16px !important; }
-        .animate-fade-in { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .workout-card[draggable="true"] { cursor: move; }
-        .workout-card[draggable="true"]:hover { transform: translateY(-2px); }
-        .workout-card.dragging { opacity: 0.5; }
-        .workout-card.drag-over { border-color: #3b82f6 !important; border-width: 2px !important; border-style: dashed !important; }
-        .exercise-card[draggable="true"] { cursor: move; }
-        .exercise-card[draggable="true"]:hover { transform: translateX(2px); }
-        .exercise-card.dragging { opacity: 0.5; }
-        .exercise-card.drag-over { border-color: #3b82f6 !important; border-width: 2px !important; border-style: dashed !important; }
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box;
+        }
+        body { 
+            overscroll-behavior: none; 
+            background-color: #020617;
+            margin: 0;
+            padding: 0;
+        }
+        input, textarea { 
+            font-size: 16px !important; 
+        }
+        .animate-fade-in { 
+            animation: fadeIn 0.3s ease-out; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .animate-slide-up {
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .program-card {
+            transition: all 0.3s ease;
+        }
+        .program-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .program-card:active {
+            transform: translateY(-2px);
+        }
+        /* Drag and drop styles */
+        .workout-card[draggable="true"] { 
+            cursor: move; 
+        }
+        .workout-card[draggable="true"]:hover { 
+            transform: translateY(-2px); 
+        }
+        .workout-card.dragging { 
+            opacity: 0.5; 
+        }
+        .workout-card.drag-over { 
+            border-color: #3b82f6 !important; 
+            border-width: 2px !important; 
+            border-style: dashed !important; 
+        }
+        .exercise-card[draggable="true"] { 
+            cursor: move; 
+        }
+        .exercise-card[draggable="true"]:hover { 
+            transform: translateX(2px); 
+        }
+        .exercise-card.dragging { 
+            opacity: 0.5; 
+        }
+        .exercise-card.drag-over { 
+            border-color: #3b82f6 !important; 
+            border-width: 2px !important; 
+            border-style: dashed !important; 
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans">
     <div id="app"></div>
-
     <script src="app.js"></script>
 </body>
 </html>
