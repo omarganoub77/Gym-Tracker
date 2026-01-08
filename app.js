@@ -579,10 +579,11 @@ class GymApp {
             const weightInput = document.getElementById(`weight-${i}`);
             const repsInput = document.getElementById(`reps-${i}`);
             const weight = weightInput ? parseFloat(weightInput.value) || 0 : 0;
-            const reps = repsInput ? parseInt(repsInput.value) || 0 : 0;
+            // const reps = repsInput ? parseInt(repsInput.value) || 0 : 0;
+            const reps = repsInput ? repsInput.value.trim() : '';
             sets.push({
                 weight: weight > 0 ? weight : '',
-                reps: reps > 0 ? reps : ''
+                reps: reps
             });
         }
         
