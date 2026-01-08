@@ -700,7 +700,7 @@ class GymApp {
                 <textarea id="notesInput" placeholder="How did it feel?" class="w-full bg-slate-900 p-4 rounded-xl border border-slate-700 h-24 outline-none resize-none">${sessionData.notes || ''}</textarea>
             </div>
             <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800">
-                <button onclick="app.saveExerciseWithSets()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl uppercase">Save Exercise</button>
+                <button onclick="app.saveExerciseWithSets()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl uppercase">Done</button>
             </div>
         </div>`;
     }
