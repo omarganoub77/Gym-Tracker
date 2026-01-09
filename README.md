@@ -29,7 +29,7 @@ A powerful-first progressive web app for tracking your gym workouts with multipl
 
 ## 🛠️ Tech Stack
 
-- Pure JavaScript (Vanilla JS)
+- Pure JavaScript 
 - Tailwind CSS
 - LocalStorage API
 - Progressive Web App (PWA)
