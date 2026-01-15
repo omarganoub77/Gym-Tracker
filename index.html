@@ -78,6 +78,46 @@
             border-width: 2px !important; 
             border-style: dashed !important; 
         }
+        /* Weight and Reps input optimization for mobile */
+        .weight-input {
+            flex: 1.4;
+            min-width: 0;
+            max-width: 65%;
+            width: 100%;
+        }
+        .reps-input {
+            flex: 0.8;
+            min-width: 0;
+            max-width: 30%;
+            width: 100%;
+        }
+        @media (max-width: 640px) {
+            .weight-input {
+                flex: 1.5;
+                max-width: 60%;
+                padding: 0.5rem !important;
+            }
+            .reps-input {
+                flex: 0.7;
+                max-width: 35%;
+                padding: 0.5rem !important;
+            }
+        }
+        /* Navigation Bar Styles */
+        nav {
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        .nav-btn {
+            min-width: 60px;
+            transition: all 0.2s ease;
+        }
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+        /* Safe area support for devices with notches */
+        .safe-area-inset-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-white font-sans">
