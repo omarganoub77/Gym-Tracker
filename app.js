@@ -320,7 +320,7 @@ class GymApp {
         this.showMenu = false;
         this.viewingHistory = null;
         this.showOnboarding = false;
-        this.currentPage = 'home'; // Navigation state: 'home', 'exercises', 'lastSessions', 'myWorkouts'
+        this.currentPage = 'exercises'; // Navigation state: 'home', 'exercises', 'lastSessions', 'myWorkouts'
         this.currentProgramId = null; // Track which program is currently active
         this.viewingProgramId = null; // Track which program's sessions we're viewing
         this.viewingProgramHistory = null; // Temporary history for viewing another program's sessions
@@ -604,7 +604,7 @@ class GymApp {
                 <div class="max-w-2xl w-full">
                     <div class="text-center mb-12 animate-fade-in">
                         <div class="text-6xl mb-4">🏋️</div>
-                        <h1 class="text-4xl font-black mb-3">Welcome to Gym Tracker</h1>
+                        <h1 class="text-4xl font-black mb-3">Gym Tracker </h1>
                         <p class="text-slate-400 text-lg">Choose your training program to get started</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -652,14 +652,14 @@ class GymApp {
             <div class="min-h-screen pb-20 animate-fade-in">
                 <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                     <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-3xl font-black tracking-tight">Gym Tracker</h1>
+                        <h1 class="text-3xl font-black tracking-tight">Never Give Up</h1>
                         <div class="flex items-center gap-2">
                             <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">ghalat ⚙️</button>
                         </div>
                     </div>
                     <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
                 </div>
-                ${this.showMenu ? `<div class="p-4 -mt-6">
+                ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
                     <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
@@ -737,7 +737,7 @@ class GymApp {
                     </div>
                     <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
                 </div>
-                ${this.showMenu ? `<div class="p-4 -mt-6">
+                ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
                     <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
@@ -785,12 +785,12 @@ class GymApp {
                             ${programName ? `<button onclick="app.viewingProgramId = null; app.viewingProgramHistory = null; app.currentPage = 'myWorkouts'; app.render()" class="mt-2 text-blue-100 text-sm font-bold uppercase">← Back to My Workouts</button>` : ''}
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Customize⚙️</button>
+                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Last Sessions ⚙️</button>
                         </div>
                     </div>
                     <p class="text-blue-100 font-medium">${historyToShow.length} session${historyToShow.length !== 1 ? 's' : ''} recorded</p>
                 </div>
-                ${this.showMenu ? `<div class="p-4 -mt-6">
+                ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
                     <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
@@ -852,12 +852,12 @@ class GymApp {
                     <div class="flex items-center justify-between mb-4">
                         <h1 class="text-3xl font-black tracking-tight">My Workouts</h1>
                         <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
+                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">da kaman ghalat? ⚙️</button>
                         </div>
                     </div>
                     <p class="text-blue-100 font-medium">${programIds.length} program${programIds.length !== 1 ? 's' : ''} saved</p>
                 </div>
-                ${this.showMenu ? `<div class="p-4 -mt-6">
+                ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
                     <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
