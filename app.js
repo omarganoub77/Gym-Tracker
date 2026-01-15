@@ -320,7 +320,10 @@ class GymApp {
         this.showMenu = false;
         this.viewingHistory = null;
         this.showOnboarding = false;
-        this.currentPage = 'home'; // Navigation state: 'home', 'exercises', 'lastSessions'
+        this.currentPage = 'home'; // Navigation state: 'home', 'exercises', 'lastSessions', 'myWorkouts'
+        this.currentProgramId = null; // Track which program is currently active
+        this.viewingProgramId = null; // Track which program's sessions we're viewing
+        this.viewingProgramHistory = null; // Temporary history for viewing another program's sessions
         this.draggedWorkoutId = null;
         this.dragOverIndex = null;
         this.draggedExerciseId = null;
@@ -334,6 +337,26 @@ class GymApp {
 
     save() {
         try {
+            if (!this.currentProgramId) return; // Don't save if no program is selected
+            
+            // Load all programs
+            const allPrograms = this.getAllPrograms();
+            
+            // Update current program
+            allPrograms[this.currentProgramId] = {
+                name: this.getProgramName(),
+                workouts: this.workouts,
+                workoutOrder: this.workoutOrder,
+                history: this.workoutHistory,
+                updatedAt: new Date().toISOString(),
+                createdAt: allPrograms[this.currentProgramId]?.createdAt || new Date().toISOString()
+            };
+            
+            // Save all programs
+            localStorage.setItem('gymPrograms', JSON.stringify(allPrograms));
+            localStorage.setItem('currentProgramId', this.currentProgramId);
+            
+            // Legacy support - also save to old keys for backward compatibility
             localStorage.setItem('gymWorkouts', JSON.stringify(this.workouts));
             localStorage.setItem('gymHistory', JSON.stringify(this.workoutHistory));
             localStorage.setItem('programSelected', 'true');
@@ -343,29 +366,110 @@ class GymApp {
             alert('Failed to save data. Your browser may be out of storage space.');
         }
     }
+    
+    getAllPrograms() {
+        try {
+            const saved = localStorage.getItem('gymPrograms');
+            return saved ? JSON.parse(saved) : {};
+        } catch (error) {
+            console.error('Failed to load programs:', error);
+            return {};
+        }
+    }
+    
+    getProgramName() {
+        // Try to get program name from template or generate one
+        const programTemplatesKeys = Object.keys(programTemplates);
+        for (const key of programTemplatesKeys) {
+            if (JSON.stringify(this.workouts) === JSON.stringify(programTemplates[key].workouts)) {
+                return programTemplates[key].name;
+            }
+        }
+        return 'Custom Program';
+    }
 
     load() {
         try {
-            const savedWorkouts = localStorage.getItem('gymWorkouts');
-            const savedHistory = localStorage.getItem('gymHistory');
-            const programSelected = localStorage.getItem('programSelected');
-            const savedOrder = localStorage.getItem('gymWorkoutOrder');
-
-            this.workoutHistory = savedHistory ? JSON.parse(savedHistory) : [];
-            this.workoutOrder = savedOrder ? JSON.parse(savedOrder) : null;
-
-            // Check if user has already selected a program
-            if (!programSelected) {
-                this.showOnboarding = true;
-                this.workouts = {};
+            // Try to load current program ID
+            const savedProgramId = localStorage.getItem('currentProgramId');
+            const allPrograms = this.getAllPrograms();
+            
+            // Check if we have saved programs
+            if (savedProgramId && allPrograms[savedProgramId]) {
+                // Load the saved program
+                const program = allPrograms[savedProgramId];
+                this.currentProgramId = savedProgramId;
+                this.workouts = program.workouts || {};
+                this.workoutOrder = program.workoutOrder || Object.keys(this.workouts);
+                this.workoutHistory = program.history || [];
             } else {
-                this.workouts = savedWorkouts ? JSON.parse(savedWorkouts) : programTemplates.upperLower.workouts;
+                // Legacy support - try old format
+                const savedWorkouts = localStorage.getItem('gymWorkouts');
+                const savedHistory = localStorage.getItem('gymHistory');
+                const programSelected = localStorage.getItem('programSelected');
+                const savedOrder = localStorage.getItem('gymWorkoutOrder');
+
+                this.workoutHistory = savedHistory ? JSON.parse(savedHistory) : [];
+                this.workoutOrder = savedOrder ? JSON.parse(savedOrder) : null;
+
+                if (!programSelected) {
+                    this.showOnboarding = true;
+                    this.workouts = {};
+                    this.currentProgramId = null;
+                } else {
+                    this.workouts = savedWorkouts ? JSON.parse(savedWorkouts) : programTemplates.upperLower.workouts;
+                    // Migrate old data to new format
+                    if (savedWorkouts && !this.currentProgramId) {
+                        this.currentProgramId = 'legacy-' + Date.now();
+                        this.save();
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to load:', error);
             this.workouts = {};
             this.workoutHistory = [];
             this.showOnboarding = true;
+            this.currentProgramId = null;
+        }
+    }
+    
+    loadProgram(programId) {
+        const allPrograms = this.getAllPrograms();
+        if (allPrograms[programId]) {
+            const program = allPrograms[programId];
+            this.currentProgramId = programId;
+            this.workouts = program.workouts || {};
+            this.workoutOrder = program.workoutOrder || Object.keys(this.workouts);
+            this.workoutHistory = program.history || [];
+            this.currentPage = 'exercises';
+            this.save();
+            this.render();
+        }
+    }
+    
+    deleteProgram(programId) {
+        if (confirm('Delete this program? All workouts and history will be lost.')) {
+            const allPrograms = this.getAllPrograms();
+            delete allPrograms[programId];
+            localStorage.setItem('gymPrograms', JSON.stringify(allPrograms));
+            
+            // If deleting current program, switch to another or show onboarding
+            if (this.currentProgramId === programId) {
+                const remainingPrograms = Object.keys(allPrograms);
+                if (remainingPrograms.length > 0) {
+                    this.loadProgram(remainingPrograms[0]);
+                } else {
+                    this.currentProgramId = null;
+                    this.workouts = {};
+                    this.workoutHistory = [];
+                    this.showOnboarding = true;
+                    localStorage.removeItem('currentProgramId');
+                    this.render();
+                }
+            } else {
+                this.render();
+            }
         }
     }
 
@@ -389,7 +493,13 @@ class GymApp {
         const template = programTemplates[programKey];
         this.workouts = JSON.parse(JSON.stringify(template.workouts));
         this.workoutOrder = Object.keys(this.workouts);
+        this.workoutHistory = []; // Start fresh history for new program
+        
+        // Create a unique program ID
+        this.currentProgramId = 'program-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
         this.showOnboarding = false;
+        this.currentPage = 'exercises'; // Navigate to exercises page after program selection
         this.save();
         this.render();
     }
@@ -450,6 +560,8 @@ class GymApp {
                 pageContent = this.renderExercises();
             } else if (this.currentPage === 'lastSessions') {
                 pageContent = this.renderLastSessions();
+            } else if (this.currentPage === 'myWorkouts') {
+                pageContent = this.renderMyWorkouts();
             } else {
                 pageContent = this.renderHome();
             }
@@ -462,6 +574,8 @@ class GymApp {
         app.addEventListener('click', (e) => {
             if (e.target.closest('.delete-history-btn')) {
                 e.stopPropagation();
+                // Don't allow deleting when viewing another program's sessions
+                if (this.viewingProgramId) return;
                 const button = e.target.closest('.delete-history-btn');
                 const index = parseInt(button.getAttribute('data-index'));
                 this.workoutHistory.splice(index, 1);
@@ -540,7 +654,6 @@ class GymApp {
                     <div class="flex items-center justify-between mb-4">
                         <h1 class="text-3xl font-black tracking-tight">Gym Tracker</h1>
                         <div class="flex items-center gap-2">
-                            <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" class="bg-white/10 p-2 rounded-lg text-xs font-bold uppercase" title="Change Program">Change Program</button>
                             <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
                         </div>
                     </div>
@@ -560,7 +673,7 @@ class GymApp {
         return `
             <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700/50 safe-area-inset-bottom z-40">
                 <div class="flex items-center justify-around px-2 py-2">
-                    <button onclick="app.currentPage = 'home'; app.render()" 
+                    <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" 
                         class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'home' ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300'}">
                         <span class="text-2xl">🏠</span>
                         <span class="text-xs font-bold uppercase">Home</span>
@@ -570,84 +683,78 @@ class GymApp {
                         <span class="text-2xl">💪</span>
                         <span class="text-xs font-bold uppercase">Exercises</span>
                     </button>
-                    <button onclick="app.currentPage = 'lastSessions'; app.render()" 
-                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'lastSessions' ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300'}">
-                        <span class="text-2xl">📊</span>
-                        <span class="text-xs font-bold uppercase">Sessions</span>
+                    <button onclick="app.currentPage = 'myWorkouts'; app.render()" 
+                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'myWorkouts' ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300'}">
+                        <span class="text-2xl">📋</span>
+                        <span class="text-xs font-bold uppercase">My Workouts</span>
                     </button>
                 </div>
             </nav>`;
     }
 
     renderExercises() {
+        // Show workout sessions (same as home page)
         const workoutOrder = this.getWorkoutOrder();
-        const allExercises = [];
-        
-        workoutOrder.forEach(workoutId => {
+        const workoutCards = workoutOrder.map((workoutId, index) => {
             const workout = this.workouts[workoutId];
-            if (workout && workout.exercises) {
-                workout.exercises.forEach(exercise => {
-                    allExercises.push({
-                        ...exercise,
-                        workoutName: workout.name,
-                        workoutColor: workout.color
-                    });
-                });
-            }
-        });
+            if (!workout) return '';
 
-        const exercisesHTML = allExercises.length > 0 ? allExercises.map(ex => `
-            <div class="bg-slate-800 rounded-xl border border-slate-700/50 p-4 mb-3">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-center gap-3 flex-1">
-                        <div class="${ex.workoutColor} w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-inner flex-shrink-0">🏋️</div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-lg font-bold truncate">${ex.name}</h3>
-                            <div class="flex items-center gap-3 mt-1">
-                                <span class="text-slate-400 text-sm">${ex.workoutName}</span>
-                                <span class="text-slate-600">•</span>
-                                <span class="text-slate-400 text-sm">${ex.sets} sets</span>
-                                <span class="text-slate-600">•</span>
-                                <span class="text-slate-400 text-sm">${ex.reps} reps</span>
-                            </div>
-                            ${ex.muscle ? `<div class="mt-2"><span class="text-xs bg-slate-700/50 text-slate-300 px-2 py-1 rounded">${ex.muscle}</span></div>` : ''}
+            return `
+                <div draggable="${this.editMode ? 'true' : 'false'}" 
+                    data-workout-id="${workout.id}"
+                    data-workout-index="${index}"
+                    class="workout-card bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700/50 mb-4 transition-all"
+                    ${this.editMode ? `ondragstart="return app.handleDragStart(event, '${workout.id}')" ondragend="app.handleDragEnd(event)" ondragover="app.handleDragOver(event, ${index})" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, ${index})"` : ''}>
+                    <div class="p-5 flex items-center justify-between">
+                        <div class="flex items-center gap-3 flex-1">
+                            ${this.editMode ? '<div class="cursor-move text-slate-500 text-2xl">☰</div>' : ''}
+                            <button onclick="app.startWorkout('${workout.id}')" class="flex items-center gap-4 flex-1 text-left ${this.editMode ? 'opacity-50 pointer-events-none' : ''}">
+                                <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-inner">🏋️</div>
+                                <div>
+                                    <h3 class="text-xl font-bold">${workout.name}</h3>
+                                    <p class="text-slate-400 text-sm">${workout.subtitle}</p>
+                                </div>
+                            </button>
                         </div>
+                        ${this.editMode ? `<div class="flex gap-2">
+                            <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
+                            <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
+                        </div>` : ''}
                     </div>
+                    ${this.editMode ? this.renderEditExercises(workout) : ''}
                 </div>
-            </div>
-        `).join('') : `
-            <div class="text-center py-12">
-                <div class="text-6xl mb-4">💪</div>
-                <p class="text-slate-400 text-lg">No exercises found</p>
-                <p class="text-slate-500 text-sm mt-2">Add exercises to your workouts to see them here</p>
-            </div>
-        `;
+            `;
+        }).join('');
 
         return `
             <div class="min-h-screen pb-20 animate-fade-in">
                 <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                     <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-3xl font-black tracking-tight">All Exercises</h1>
+                        <h1 class="text-3xl font-black tracking-tight">Gym Tracker</h1>
                         <div class="flex items-center gap-2">
-                            <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" class="bg-white/10 p-2 rounded-lg text-xs font-bold uppercase" title="Change Program">Change Program</button>
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
+                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Customize⚙️</button>
                         </div>
                     </div>
-                    <p class="text-blue-100 font-medium">${allExercises.length} exercise${allExercises.length !== 1 ? 's' : ''} across all workouts</p>
+                    <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
                 </div>
                 ${this.showMenu ? `<div class="p-4 -mt-6">
-                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
+                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
-                    ${exercisesHTML}
+                    ${workoutCards}
+                    ${this.editMode ? `<button onclick="app.creatingNewWorkout = true; app.render()" class="w-full bg-blue-600/20 text-blue-400 p-4 rounded-xl font-bold mb-4">+ Create New Workout</button>` : ''}
                 </div>
             </div>`;
     }
 
     renderLastSessions() {
-        const historyHTML = this.workoutHistory.length > 0 ? `
+        // Use viewing program history if viewing another program's sessions
+        const historyToShow = this.viewingProgramHistory || this.workoutHistory;
+        const programName = this.viewingProgramId ? this.getAllPrograms()[this.viewingProgramId]?.name : null;
+        
+        const historyHTML = historyToShow.length > 0 ? `
             <div class="space-y-3">
-                ${this.workoutHistory.map((w, index) => `
+                ${historyToShow.map((w, index) => `
                     <div class="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
                         <button class="view-history-btn w-full p-4 flex justify-between items-center text-left hover:bg-slate-800 transition-all" data-index="${index}">
                             <div class="flex-1">
@@ -657,7 +764,7 @@ class GymApp {
                             </div>
                             <div class="text-slate-600 text-2xl ml-4">→</div>
                         </button>
-                        <button class="delete-history-btn w-full bg-red-500/10 text-red-400 py-2 text-xs font-bold uppercase hover:bg-red-500/20 transition-all border-t border-slate-700/50" data-index="${index}">Delete</button>
+                        ${!this.viewingProgramId ? `<button class="delete-history-btn w-full bg-red-500/10 text-red-400 py-2 text-xs font-bold uppercase hover:bg-red-500/20 transition-all border-t border-slate-700/50" data-index="${index}">Delete</button>` : ''}
                     </div>
                 `).join('')}
             </div>
@@ -673,13 +780,15 @@ class GymApp {
             <div class="min-h-screen pb-20 animate-fade-in">
                 <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                     <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-3xl font-black tracking-tight">Last Sessions</h1>
+                        <div>
+                            <h1 class="text-3xl font-black tracking-tight">${programName ? programName + ' Sessions' : 'Last Sessions'}</h1>
+                            ${programName ? `<button onclick="app.viewingProgramId = null; app.viewingProgramHistory = null; app.currentPage = 'myWorkouts'; app.render()" class="mt-2 text-blue-100 text-sm font-bold uppercase">← Back to My Workouts</button>` : ''}
+                        </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" class="bg-white/10 p-2 rounded-lg text-xs font-bold uppercase" title="Change Program">Change Program</button>
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
+                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Customize⚙️</button>
                         </div>
                     </div>
-                    <p class="text-blue-100 font-medium">${this.workoutHistory.length} session${this.workoutHistory.length !== 1 ? 's' : ''} recorded</p>
+                    <p class="text-blue-100 font-medium">${historyToShow.length} session${historyToShow.length !== 1 ? 's' : ''} recorded</p>
                 </div>
                 ${this.showMenu ? `<div class="p-4 -mt-6">
                     <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
@@ -688,6 +797,87 @@ class GymApp {
                     ${historyHTML}
                 </div>
             </div>`;
+    }
+
+    renderMyWorkouts() {
+        const allPrograms = this.getAllPrograms();
+        const programIds = Object.keys(allPrograms);
+        
+        const programsHTML = programIds.length > 0 ? programIds.map(programId => {
+            const program = allPrograms[programId];
+            const workoutCount = Object.keys(program.workouts || {}).length;
+            const sessionCount = (program.history || []).length;
+            const isCurrent = this.currentProgramId === programId;
+            const updatedDate = program.updatedAt ? new Date(program.updatedAt).toLocaleDateString() : 'Unknown';
+            
+            return `
+                <div class="bg-slate-800 rounded-xl border ${isCurrent ? 'border-blue-500' : 'border-slate-700/50'} overflow-hidden mb-4 shadow-lg">
+                    <div class="p-5">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h3 class="text-xl font-bold">${program.name || 'Unnamed Program'}</h3>
+                                    ${isCurrent ? '<span class="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs font-bold uppercase">Current</span>' : ''}
+                                </div>
+                                <div class="text-slate-400 text-sm space-y-1">
+                                    <div>${workoutCount} workout${workoutCount !== 1 ? 's' : ''}</div>
+                                    <div>${sessionCount} session${sessionCount !== 1 ? 's' : ''} recorded</div>
+                                    <div class="text-slate-500 text-xs mt-2">Last updated: ${updatedDate}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-4">
+                            ${!isCurrent ? `
+                                <button onclick="app.loadProgram('${programId}')" class="flex-1 bg-blue-600/20 text-blue-400 px-4 py-2 rounded-lg text-sm font-bold uppercase hover:bg-blue-600/30 transition-all">Load Program</button>
+                            ` : `
+                                <button onclick="app.currentPage = 'exercises'; app.render()" class="flex-1 bg-green-600/20 text-green-400 px-4 py-2 rounded-lg text-sm font-bold uppercase hover:bg-green-600/30 transition-all">View Workouts</button>
+                            `}
+                            <button onclick="app.viewProgramSessions('${programId}')" class="flex-1 bg-purple-600/20 text-purple-400 px-4 py-2 rounded-lg text-sm font-bold uppercase hover:bg-purple-600/30 transition-all">Sessions</button>
+                            <button onclick="app.deleteProgram('${programId}')" class="bg-red-600/20 text-red-400 px-4 py-2 rounded-lg text-sm font-bold uppercase hover:bg-red-600/30 transition-all">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('') : `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">📋</div>
+                <p class="text-slate-400 text-lg">No saved programs yet</p>
+                <p class="text-slate-500 text-sm mt-2">Select a program template to get started</p>
+            </div>
+        `;
+
+        return `
+            <div class="min-h-screen pb-20 animate-fade-in">
+                <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h1 class="text-3xl font-black tracking-tight">My Workouts</h1>
+                        <div class="flex items-center gap-2">
+                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
+                        </div>
+                    </div>
+                    <p class="text-blue-100 font-medium">${programIds.length} program${programIds.length !== 1 ? 's' : ''} saved</p>
+                </div>
+                ${this.showMenu ? `<div class="p-4 -mt-6">
+                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
+                </div>` : '<div class="h-6"></div>'}
+                <div class="px-4">
+                    ${programsHTML}
+                </div>
+            </div>`;
+    }
+    
+    viewProgramSessions(programId) {
+        const allPrograms = this.getAllPrograms();
+        if (allPrograms[programId]) {
+            const program = allPrograms[programId];
+            const history = program.history || [];
+            
+            // Store original state
+            this.viewingProgramId = programId;
+            this.viewingProgramHistory = history;
+            this.currentPage = 'lastSessions';
+            this.render();
+        }
     }
 
     renderEditExercises(workout) {
@@ -886,7 +1076,7 @@ class GymApp {
         return `
             <div class="min-h-screen pb-20 animate-fade-in">
                 <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 pb-8 rounded-b-2xl shadow-xl mb-4">
-                    <button onclick="app.viewingHistory = null; app.currentPage = 'lastSessions'; app.render()" class="mb-4 bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← Back</button>
+                    <button onclick="app.viewingHistory = null; app.currentPage = app.viewingProgramId ? 'myWorkouts' : 'lastSessions'; if (app.viewingProgramId) { app.viewingProgramId = null; app.viewingProgramHistory = null; } app.render()" class="mb-4 bg-white/10 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← Back</button>
                     <h1 class="text-2xl font-black uppercase mb-2">${historyItem.workoutName}</h1>
                     <div class="text-slate-400 text-sm font-medium">${new Date(historyItem.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
                 </div>
@@ -926,8 +1116,12 @@ class GymApp {
     }
 
     viewHistory(index) {
-        this.viewingHistory = this.workoutHistory[index].id;
-        this.render();
+        // Use viewing program history if viewing another program's sessions
+        const historyToUse = this.viewingProgramHistory || this.workoutHistory;
+        if (historyToUse[index]) {
+            this.viewingHistory = historyToUse[index].id;
+            this.render();
+        }
     }
 
     saveNewWorkout() {
