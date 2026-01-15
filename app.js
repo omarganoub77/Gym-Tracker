@@ -654,7 +654,7 @@ class GymApp {
                     <div class="flex items-center justify-between mb-4">
                         <h1 class="text-3xl font-black tracking-tight">Gym Tracker</h1>
                         <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">⚙️</button>
+                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">ghalat ⚙️</button>
                         </div>
                     </div>
                     <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
@@ -969,7 +969,7 @@ class GymApp {
 
         return `<div class="min-h-screen pb-24 animate-fade-in">
             <div class="${this.currentWorkout.color} p-6 rounded-b-2xl mb-4 shadow-xl">
-                <button onclick="app.currentWorkout = null; app.render()" class="mb-4 bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← QUIT</button>
+                <button onclick="app.currentWorkout = null; app.render()" class="mb-4 bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← back</button>
                 <h1 class="text-2xl font-black uppercase tracking-tight">${this.currentWorkout.name}</h1>
                 <p class="text-white/80 text-sm font-medium">${this.currentWorkout.subtitle}</p>
             </div>
