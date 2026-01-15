@@ -664,13 +664,10 @@ class GymApp {
                                 </div>
                             </button>
                         </div>
-                        <div class="flex gap-2">
-                            ${!this.editMode ? `<button onclick="app.editMode = true; app.render()" class="bg-slate-700/50 text-slate-300 px-3 py-1 rounded text-xs font-bold uppercase hover:bg-slate-700 transition-all" title="Customize this workout">Customize⚙️</button>` : ''}
-                            ${this.editMode ? `
-                                <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
-                                <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
-                            ` : ''}
-                        </div>
+                        ${this.editMode ? `<div class="flex gap-2">
+                            <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
+                            <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
+                        </div>` : ''}
                     </div>
                     ${this.editMode ? this.renderEditExercises(workout) : ''}
                 </div>
@@ -917,7 +914,10 @@ class GymApp {
 
         return `<div class="min-h-screen pb-24 animate-fade-in">
             <div class="${this.currentWorkout.color} p-6 rounded-b-2xl mb-4 shadow-xl">
-                <button onclick="app.currentWorkout = null; app.render()" class="mb-4 bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← back</button>
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="app.currentWorkout = null; app.render()" class="bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← back</button>
+                    ${!this.editMode ? `<button onclick="app.editMode = true; app.render()" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/30 transition-all">Customize⚙️</button>` : `<button onclick="app.editMode = false; app.render()" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/30 transition-all">Finish Customizing</button>`}
+                </div>
                 <h1 class="text-2xl font-black uppercase tracking-tight">${this.currentWorkout.name}</h1>
                 <p class="text-white/80 text-sm font-medium">${this.currentWorkout.subtitle}</p>
             </div>
@@ -994,9 +994,13 @@ class GymApp {
     }
 
     renderHistoryDetail() {
-        const historyItem = this.workoutHistory.find(h => h.id === this.viewingHistory);
+        // Use viewing program history if viewing another program's sessions
+        const historyToUse = this.viewingProgramHistory || this.workoutHistory;
+        const historyItem = historyToUse.find(h => h.id === this.viewingHistory);
         if (!historyItem) {
             this.viewingHistory = null;
+            this.viewingProgramId = null;
+            this.viewingProgramHistory = null;
             this.render();
             return '';
         }
@@ -1047,10 +1051,35 @@ class GymApp {
     }
 
     findExerciseName(exerciseId) {
+        // First check current workouts
         for (let workout of Object.values(this.workouts)) {
             const ex = workout.exercises.find(e => e.id === exerciseId);
             if (ex) return ex.name;
         }
+        
+        // If viewing another program's history, check that program's workouts
+        if (this.viewingProgramId) {
+            const allPrograms = this.getAllPrograms();
+            const viewingProgram = allPrograms[this.viewingProgramId];
+            if (viewingProgram && viewingProgram.workouts) {
+                for (let workout of Object.values(viewingProgram.workouts)) {
+                    const ex = workout.exercises.find(e => e.id === exerciseId);
+                    if (ex) return ex.name;
+                }
+            }
+        }
+        
+        // Check all saved programs as fallback
+        const allPrograms = this.getAllPrograms();
+        for (let program of Object.values(allPrograms)) {
+            if (program.workouts) {
+                for (let workout of Object.values(program.workouts)) {
+                    const ex = workout.exercises.find(e => e.id === exerciseId);
+                    if (ex) return ex.name;
+                }
+            }
+        }
+        
         return exerciseId;
     }
 
