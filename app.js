@@ -732,9 +732,6 @@ class GymApp {
                             <h1 class="text-3xl font-black tracking-tight">${programName ? programName + ' Sessions' : 'Last Sessions'}</h1>
                             ${programName ? `<button onclick="app.viewingProgramId = null; app.viewingProgramHistory = null; app.currentPage = 'myWorkouts'; app.render()" class="mt-2 text-blue-100 text-sm font-bold uppercase">← Back to My Workouts</button>` : ''}
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Last Sessions ⚙️</button>
-                        </div>
                     </div>
                     <p class="text-blue-100 font-medium">${historyToShow.length} session${historyToShow.length !== 1 ? 's' : ''} recorded</p>
                 </div>
