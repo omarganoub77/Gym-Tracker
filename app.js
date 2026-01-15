@@ -563,7 +563,9 @@ class GymApp {
             } else if (this.currentPage === 'myWorkouts') {
                 pageContent = this.renderMyWorkouts();
             } else {
-                pageContent = this.renderHome();
+                // Default to exercises if unknown page
+                this.currentPage = 'exercises';
+                pageContent = this.renderExercises();
             }
             app.innerHTML = pageContent + (showNavBar ? this.renderNavigationBar() : '');
         }
@@ -615,66 +617,12 @@ class GymApp {
         `;
     }
 
-    renderHome() {
-        const workoutOrder = this.getWorkoutOrder();
-        const workoutCards = workoutOrder.map((workoutId, index) => {
-            const workout = this.workouts[workoutId];
-            if (!workout) return '';
-
-            return `
-                <div draggable="${this.editMode ? 'true' : 'false'}" 
-                    data-workout-id="${workout.id}"
-                    data-workout-index="${index}"
-                    class="workout-card bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700/50 mb-4 transition-all"
-                    ${this.editMode ? `ondragstart="return app.handleDragStart(event, '${workout.id}')" ondragend="app.handleDragEnd(event)" ondragover="app.handleDragOver(event, ${index})" ondragleave="app.handleDragLeave(event)" ondrop="app.handleDrop(event, ${index})"` : ''}>
-                    <div class="p-5 flex items-center justify-between">
-                        <div class="flex items-center gap-3 flex-1">
-                            ${this.editMode ? '<div class="cursor-move text-slate-500 text-2xl">☰</div>' : ''}
-                            <button onclick="app.startWorkout('${workout.id}')" class="flex items-center gap-4 flex-1 text-left ${this.editMode ? 'opacity-50 pointer-events-none' : ''}">
-                                <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-inner">🏋️</div>
-                                <div>
-                                    <h3 class="text-xl font-bold">${workout.name}</h3>
-                                    <p class="text-slate-400 text-sm">${workout.subtitle}</p>
-                                </div>
-                            </button>
-                        </div>
-                        ${this.editMode ? `<div class="flex gap-2">
-                            <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
-                            <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
-                        </div>` : ''}
-                    </div>
-                    ${this.editMode ? this.renderEditExercises(workout) : ''}
-                </div>
-            `;
-        }).join('');
-
-        return `
-            <div class="min-h-screen pb-20 animate-fade-in">
-                <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
-                    <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-3xl font-black tracking-tight">Never Give Up</h1>
-                        <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">ghalat ⚙️</button>
-                        </div>
-                    </div>
-                    <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
-                </div>
-                ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
-                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
-                </div>` : '<div class="h-6"></div>'}
-                <div class="px-4">
-                    ${workoutCards}
-                    ${this.editMode ? `<button onclick="app.creatingNewWorkout = true; app.render()" class="w-full bg-blue-600/20 text-blue-400 p-4 rounded-xl font-bold mb-4">+ Create New Workout</button>` : ''}
-                </div>
-            </div>`;
-    }
-
     renderNavigationBar() {
         return `
             <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700/50 safe-area-inset-bottom z-40">
                 <div class="flex items-center justify-around px-2 py-2">
                     <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" 
-                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'home' ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300'}">
+                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all text-slate-500 hover:text-slate-300">
                         <span class="text-2xl">🏠</span>
                         <span class="text-xs font-bold uppercase">Home</span>
                     </button>
@@ -716,10 +664,13 @@ class GymApp {
                                 </div>
                             </button>
                         </div>
-                        ${this.editMode ? `<div class="flex gap-2">
-                            <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
-                            <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
-                        </div>` : ''}
+                        <div class="flex gap-2">
+                            ${!this.editMode ? `<button onclick="app.editMode = true; app.render()" class="bg-slate-700/50 text-slate-300 px-3 py-1 rounded text-xs font-bold uppercase hover:bg-slate-700 transition-all" title="Customize this workout">Customize⚙️</button>` : ''}
+                            ${this.editMode ? `
+                                <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
+                                <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
+                            ` : ''}
+                        </div>
                     </div>
                     ${this.editMode ? this.renderEditExercises(workout) : ''}
                 </div>
@@ -730,7 +681,7 @@ class GymApp {
             <div class="min-h-screen pb-20 animate-fade-in">
                 <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                     <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-3xl font-black tracking-tight">Gym Tracker</h1>
+                        <h1 class="text-3xl font-black tracking-tight">Never Give Up</h1>
                         <div class="flex items-center gap-2">
                             <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Customize⚙️</button>
                         </div>
@@ -791,7 +742,7 @@ class GymApp {
                     <p class="text-blue-100 font-medium">${historyToShow.length} session${historyToShow.length !== 1 ? 's' : ''} recorded</p>
                 </div>
                 ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
-                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
+                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
                     ${historyHTML}
@@ -851,14 +802,11 @@ class GymApp {
                 <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
                     <div class="flex items-center justify-between mb-4">
                         <h1 class="text-3xl font-black tracking-tight">My Workouts</h1>
-                        <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">da kaman ghalat? ⚙️</button>
-                        </div>
                     </div>
                     <p class="text-blue-100 font-medium">${programIds.length} program${programIds.length !== 1 ? 's' : ''} saved</p>
                 </div>
                 ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
-                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.currentPage = 'home'; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
+                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
                 </div>` : '<div class="h-6"></div>'}
                 <div class="px-4">
                     ${programsHTML}
