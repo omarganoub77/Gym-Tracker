@@ -104,6 +104,8 @@
             }
         }
         /* Navigation Bar Styles */
+        
+        /* Navigation Bar Styles */
         nav {
             box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
         }
@@ -118,7 +120,16 @@
         .safe-area-inset-bottom {
             padding-bottom: env(safe-area-inset-bottom);
         }
+        /* Touch manipulation for better mobile experience */
+        .touch-manipulation {
+            touch-action: manipulation;
+        }
+        button {
+            -webkit-user-select: none;
+            user-select: none;
+        }
     </style>
+
 </head>
 <body class="bg-slate-950 text-white font-sans">
     <div id="app"></div>

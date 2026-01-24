@@ -896,33 +896,87 @@ class GymApp {
     }
 
     renderWorkoutList() {
-        const exerciseCards = this.currentWorkout.exercises.map(exercise => {
-            const sessionData = this.workoutSession.exercises[exercise.id];
-            const isComplete = sessionData?.completed || false;
+        const workout = this.currentWorkout;
+        
+        if (this.editMode) {
+            // Show edit mode with drag and drop
+            const exerciseCards = workout.exercises.map((exercise, index) => {
+                const sessionData = this.workoutSession.exercises[exercise.id];
+                const isComplete = sessionData?.completed || false;
 
-            return `<div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4 mb-3 border border-slate-700/50">
-                <button onclick="app.activeExercise = ${JSON.stringify(exercise).replace(/"/g, '&quot;')}; app.render()" class="flex-1 text-left">
-                    <h3 class="font-bold text-lg">${exercise.name}</h3>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase">${exercise.sets} SETS • ${exercise.reps} REPS</div>
-                </button>
-                <button onclick="app.toggleExerciseQuick('${exercise.id}', event)" class="text-3xl">${isComplete ? '✅' : '⚪'}</button>
-            </div>`;
-        }).join('');
+                return `<div draggable="true"
+                    data-exercise-id="${exercise.id}"
+                    data-exercise-index="${index}"
+                    data-workout-id="${workout.id}"
+                    class="exercise-card w-full bg-slate-800 rounded-xl p-4 mb-3 border border-slate-700/50 transition-all touch-manipulation"
+                    ontouchstart="app.handleTouchStart(event, '${workout.id}', '${exercise.id}', ${index})"
+                    ontouchmove="app.handleTouchMove(event)"
+                    ontouchend="app.handleTouchEnd(event)"
+                    ondragstart="return app.handleExerciseDragStart(event, '${workout.id}', '${exercise.id}')"
+                    ondragend="app.handleExerciseDragEnd(event)"
+                    ondragover="app.handleExerciseDragOver(event, '${workout.id}', ${index})"
+                    ondragleave="app.handleExerciseDragLeave(event)"
+                    ondrop="app.handleExerciseDrop(event, '${workout.id}', ${index})">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3 flex-1">
+                            <div class="cursor-move text-slate-500 text-2xl touch-manipulation">☰</div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg">${exercise.name}</h3>
+                                <div class="text-[10px] font-bold text-slate-500 uppercase">${exercise.sets} SETS • ${exercise.reps} REPS</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="app.editingExercise = { workoutId: '${workout.id}', exercise: ${JSON.stringify(exercise).replace(/"/g, '&quot;')} }; app.render()" class="bg-blue-500/10 text-blue-400 px-3 py-2 rounded text-xs font-bold uppercase touch-manipulation">Edit</button>
+                            <button onclick="app.deleteExercise('${workout.id}', '${exercise.id}')" class="bg-red-500/10 text-red-400 px-3 py-2 rounded text-xs font-bold uppercase touch-manipulation">✕</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
 
-        return `<div class="min-h-screen pb-24 animate-fade-in">
-            <div class="${this.currentWorkout.color} p-6 rounded-b-2xl mb-4 shadow-xl">
-                <div class="flex items-center justify-between mb-4">
-                    <button onclick="app.currentWorkout = null; app.render()" class="bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← back</button>
-                    ${!this.editMode ? `<button onclick="app.editMode = true; app.render()" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/30 transition-all">Customize⚙️</button>` : `<button onclick="app.editMode = false; app.render()" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/30 transition-all">Finish Customizing</button>`}
+            return `<div class="min-h-screen pb-24 animate-fade-in">
+                <div class="${workout.color} p-6 rounded-b-2xl mb-4 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <button onclick="app.currentWorkout = null; app.editMode = false; app.render()" class="bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">← back</button>
+                        <button onclick="app.editMode = false; app.render()" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/30 transition-all">Finish Customizing</button>
+                    </div>
+                    <h1 class="text-2xl font-black uppercase tracking-tight">${workout.name}</h1>
+                    <p class="text-white/80 text-sm font-medium">${workout.subtitle}</p>
                 </div>
-                <h1 class="text-2xl font-black uppercase tracking-tight">${this.currentWorkout.name}</h1>
-                <p class="text-white/80 text-sm font-medium">${this.currentWorkout.subtitle}</p>
-            </div>
-            <div class="px-4">${exerciseCards}</div>
-            <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-lg border-t border-slate-800">
-                <button onclick="app.finishWorkout()" class="w-full bg-green-600 py-4 rounded-2xl font-black shadow-lg uppercase">Finish Session</button>
-            </div>
-        </div>`;
+                <div class="px-4">
+                    ${exerciseCards}
+                    <button onclick="app.addExercise('${workout.id}')" class="w-full bg-blue-600/20 text-blue-400 p-4 rounded-xl font-bold text-sm mb-4 touch-manipulation">+ Add New Exercise</button>
+                </div>
+            </div>`;
+        } else {
+            // Show normal workout mode
+            const exerciseCards = workout.exercises.map(exercise => {
+                const sessionData = this.workoutSession.exercises[exercise.id];
+                const isComplete = sessionData?.completed || false;
+
+                return `<div class="w-full bg-slate-800 rounded-xl p-4 flex items-center gap-4 mb-3 border border-slate-700/50">
+                    <button onclick="app.activeExercise = ${JSON.stringify(exercise).replace(/"/g, '&quot;')}; app.render()" class="flex-1 text-left touch-manipulation">
+                        <h3 class="font-bold text-lg">${exercise.name}</h3>
+                        <div class="text-[10px] font-bold text-slate-500 uppercase">${exercise.sets} SETS • ${exercise.reps} REPS</div>
+                    </button>
+                    <button onclick="app.toggleExerciseQuick('${exercise.id}', event)" class="text-3xl touch-manipulation">${isComplete ? '✅' : '⚪'}</button>
+                </div>`;
+            }).join('');
+
+            return `<div class="min-h-screen pb-24 animate-fade-in">
+                <div class="${workout.color} p-6 rounded-b-2xl mb-4 shadow-xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <button onclick="app.currentWorkout = null; app.render()" class="bg-black/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest touch-manipulation">← back</button>
+                        <button onclick="app.editMode = true; app.render()" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white/30 transition-all touch-manipulation">Customize⚙️</button>
+                    </div>
+                    <h1 class="text-2xl font-black uppercase tracking-tight">${workout.name}</h1>
+                    <p class="text-white/80 text-sm font-medium">${workout.subtitle}</p>
+                </div>
+                <div class="px-4">${exerciseCards}</div>
+                <div class="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/80 backdrop-blur-lg border-t border-slate-800">
+                    <button onclick="app.finishWorkout()" class="w-full bg-green-600 py-4 rounded-2xl font-black shadow-lg uppercase touch-manipulation">Finish Session</button>
+                </div>
+            </div>`;
+        }
     }
 
     renderExerciseDetail() {
