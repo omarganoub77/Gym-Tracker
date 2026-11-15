@@ -1,25 +1,39 @@
-# SETPOINT
+# 💪 Gym Tracker
 
-### Train with intent.
+A powerful-first progressive web app for tracking your gym workouts with multiple training programs.
 
-SETPOINT is a focused, mobile-first workout log for lifters who want their training to move forward. Pick a split, log every set, and keep your past sessions close while you train. No account, feed, or subscription flow: your training history stays on your device.
 
-## What you can do
+## 🌟 Features
 
-- Start with Upper/Lower, Push/Pull/Legs, Bro Split, Full Body, or a blank plan
-- Log weight and reps set by set, with your previous performance in view
-- Review completed sessions and inspect each exercise log
-- Create and customize training days and exercises
-- Reorder workouts and exercises with drag and drop
-- Keep multiple programs and switch between them
-- Install the app on a phone as a progressive web app
+- **5 Pre-built Programs**: Upper/Lower, Push/Pull/Legs, Bro Split, Full Body, or Start Empty
+- **Set-by-Set Tracking**: Log weight and reps for each individual set
+- **Last Session Comparison**: See your previous performance while working out
+- **Workout History**: Review all past sessions with detailed logs
+- **Fully Customizable**: Add, edit, delete workouts and exercises
+- **Drag & Drop**: Reorder workouts and exercises easily
+- **Mobile-Optimized**: Perfect for use in the gym
+- **No Account Required**: All data stored locally on your device
 
-## Get started
+### Install as App
+1. Open the link on your phone
+2. **iPhone**: Tap Share → Add to Home Screen
+3. **Android**: Tap Menu → Add to Home Screen
 
-Open `index.html` in a modern browser. Choose a plan to begin; SETPOINT saves programs and workout history locally in browser storage.
+## 📱 How to Use
 
-To install on a phone, open the hosted app in your browser and choose **Add to Home Screen** (iPhone: Share → Add to Home Screen).
+1. **First Launch**: Choose your training program
+2. **Start Workout**: Tap a workout to begin
+3. **Log Sets**: Enter weight and reps for each set
+4. **Track Progress**: View last session data while working out
+5. **Review History**: Check past workouts anytime
 
-## Built with
+## 🛠️ Tech Stack
 
-Vanilla JavaScript, Tailwind CSS, and browser LocalStorage. The interface is designed for quick use between sets and adapts to narrow mobile screens.
+- Pure JavaScript (Vanilla JS)
+- Tailwind CSS
+- LocalStorage API
+- Progressive Web App (PWA)
+
+---
+
+Made with for lifters, by lifters
