@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Gym Tracker">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-title" content="SETPOINT">
+    <meta name="theme-color" content="#10110e">
     <link rel="apple-touch-icon" href="icon1.png">
-    <title>Gym Tracker</title>
+    <title>SETPOINT — Train with intent</title>
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkd5bSBUcmFja2VyIiwKICAic2hvcnRfbmFtZSI6ICJHeW0iLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBmMTcyYSIsCiAgInRoZW1lX2NvbG9yIjogIiMzYjgyZjYiCn0=">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -128,6 +128,45 @@
             -webkit-user-select: none;
             user-select: none;
         }
+        :root { color-scheme: dark; --ink:#10110e; --panel:#191a16; --line:rgba(255,255,255,.09); --volt:#d7ff3f; }
+        body { background:#10110e; color:#f3f3ed; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+        #app { min-height:100dvh; background:radial-gradient(ellipse at 50% -10%, rgba(215,255,63,.08), transparent 42%), #10110e; }
+        .brand-mark { letter-spacing:.19em; font-size:11px; font-weight:900; }
+        .dashboard-shell { max-width:760px; margin:0 auto; padding:22px 20px 112px; }
+        .dashboard-top { display:flex; justify-content:space-between; align-items:center; padding:4px 0 28px; }
+        .dashboard-hero { position:relative; overflow:hidden; min-height:230px; border:1px solid rgba(215,255,63,.2); border-radius:24px; padding:27px; background:linear-gradient(135deg,#23251c 0%,#191a16 58%,#272c17 100%); box-shadow:0 18px 60px rgba(0,0,0,.26); }
+        .dashboard-hero:after { content:'SP'; position:absolute; right:-5px; bottom:-56px; font-size:220px; line-height:1; font-weight:1000; letter-spacing:-.1em; color:rgba(215,255,63,.045); pointer-events:none; }
+        .page-banner { background:linear-gradient(135deg,#23251c,#191a16 62%,#272c17) !important; border:1px solid rgba(215,255,63,.15); border-radius:0 0 28px 28px !important; box-shadow:none !important; }
+        [class~="bg-blue-600"] { background-color:var(--volt) !important; color:#15160f !important; }
+        [class~="text-blue-400"] { color:var(--volt) !important; }
+        [class~="border-blue-500"] { border-color:rgba(215,255,63,.55) !important; }
+        .program-card { background:#191a16 !important; border-color:var(--line) !important; }
+        .program-card:hover { border-color:var(--volt) !important; box-shadow:0 18px 42px rgba(0,0,0,.28) !important; }
+        .program-card h3 { letter-spacing:-.035em; }
+        input, select, textarea { background:#171814 !important; border-color:rgba(255,255,255,.12) !important; color:#f3f3ed !important; }
+        .eyebrow { color:var(--volt); font-size:10px; font-weight:900; letter-spacing:.2em; text-transform:uppercase; }
+        .hero-title { max-width:410px; margin:17px 0 10px; font-size:clamp(36px,9vw,58px); line-height:.94; letter-spacing:-.065em; font-weight:950; }
+        .volt { color:var(--volt); }
+        .hero-sub { color:#a7a99e; font-size:13px; }
+        .hero-bottom { display:flex; align-items:center; gap:10px; margin-top:25px; position:relative; z-index:1; }
+        .stat-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:14px 0 29px; }
+        .stat-tile { background:#191a16; border:1px solid var(--line); border-radius:15px; padding:14px; }
+        .stat-value { font-size:22px; font-weight:900; letter-spacing:-.05em; }
+        .stat-label { color:#898b81; font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; margin-top:3px; }
+        .section-heading { display:flex; align-items:end; justify-content:space-between; margin:25px 1px 13px; }
+        .section-heading h2 { font-size:20px; font-weight:900; letter-spacing:-.04em; }
+        .workout-card { background:linear-gradient(110deg,#1c1d18,#171814) !important; border:1px solid var(--line) !important; border-radius:17px !important; box-shadow:none !important; }
+        .workout-card:hover { border-color:rgba(215,255,63,.35) !important; transform:translateY(-2px); }
+        .workout-card button .rounded-lg { background:rgba(215,255,63,.11) !important; color:var(--volt); }
+        .workout-card h3 { font-weight:850; letter-spacing:-.025em; }
+        .workout-card .text-slate-400 { color:#909187; }
+        .start-chip { border:1px solid rgba(215,255,63,.25); color:var(--volt); border-radius:999px; padding:8px 11px; font-size:9px; font-weight:900; letter-spacing:.12em; white-space:nowrap; }
+        nav { background:rgba(20,21,17,.93) !important; border-color:var(--line) !important; box-shadow:0 -12px 36px rgba(0,0,0,.25) !important; backdrop-filter:blur(18px); }
+        .nav-btn { border-radius:13px !important; }
+        .nav-btn span:first-child { font-size:18px !important; }
+        .nav-btn span:last-child { font-size:9px !important; letter-spacing:.12em; }
+        .nav-btn.is-active { color:var(--volt) !important; background:rgba(215,255,63,.09) !important; }
+        @media (max-width:420px) { .dashboard-shell { padding-left:15px; padding-right:15px; } .dashboard-hero { padding:22px; } .stat-tile { padding:11px; } }
     </style>
 
 </head>

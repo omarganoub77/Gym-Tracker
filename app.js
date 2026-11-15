@@ -606,8 +606,9 @@ class GymApp {
                 <div class="max-w-2xl w-full">
                     <div class="text-center mb-12 animate-fade-in">
                         <div class="text-6xl mb-4">🏋️</div>
-                        <h1 class="text-4xl font-black mb-3">Gym Tracker </h1>
-                        <p class="text-slate-400 text-lg">Choose your training program to get started</p>
+                        <div class="brand-mark mb-5"><span class="volt">●</span> SETPOINT</div>
+                        <h1 class="text-4xl font-black mb-3 tracking-tight">Build your split.<br><span class="volt">Own the work.</span></h1>
+                        <p class="text-slate-400 text-lg">Pick a training structure. Make it yours as you go.</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         ${programs}
@@ -621,31 +622,39 @@ class GymApp {
         return `
             <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700/50 safe-area-inset-bottom z-40">
                 <div class="flex items-center justify-around px-2 py-2">
-                    <button onclick="if(confirm('Switch program? Your current workouts will be replaced.')) { app.showOnboarding = true; localStorage.removeItem('programSelected'); app.render(); }" 
-                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all text-slate-500 hover:text-slate-300">
-                        <span class="text-2xl">🏠</span>
-                        <span class="text-xs font-bold uppercase">Home</span>
-                    </button>
                     <button onclick="app.currentPage = 'exercises'; app.render()" 
-                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'exercises' ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300'}">
-                        <span class="text-2xl">💪</span>
-                        <span class="text-xs font-bold uppercase">Exercises</span>
+                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'exercises' ? 'is-active' : 'text-slate-500 hover:text-slate-300'}">
+                        <span>◉</span>
+                        <span class="text-xs font-bold uppercase">Train</span>
+                    </button>
+                    <button onclick="app.currentPage = 'lastSessions'; app.viewingProgramId = null; app.viewingProgramHistory = null; app.render()"
+                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'lastSessions' ? 'is-active' : 'text-slate-500 hover:text-slate-300'}">
+                        <span>↗</span>
+                        <span class="text-xs font-bold uppercase">Logbook</span>
                     </button>
                     <button onclick="app.currentPage = 'myWorkouts'; app.render()" 
-                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'myWorkouts' ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-slate-300'}">
-                        <span class="text-2xl">📋</span>
-                        <span class="text-xs font-bold uppercase">My Workouts</span>
+                        class="nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-all ${this.currentPage === 'myWorkouts' ? 'is-active' : 'text-slate-500 hover:text-slate-300'}">
+                        <span>▦</span>
+                        <span class="text-xs font-bold uppercase">Programs</span>
                     </button>
                 </div>
             </nav>`;
     }
 
     renderExercises() {
-        // Show workout sessions (same as home page)
         const workoutOrder = this.getWorkoutOrder();
+        const today = new Date();
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - 6);
+        weekStart.setHours(0, 0, 0, 0);
+        const thisWeek = this.workoutHistory.filter(item => new Date(item.date) >= weekStart).length;
+        const lastSession = this.workoutHistory[0];
+        const lastLiftCount = lastSession ? Object.keys(lastSession.exercises || {}).length : 0;
+        const programName = this.getAllPrograms()[this.currentProgramId]?.name || 'Your training block';
         const workoutCards = workoutOrder.map((workoutId, index) => {
             const workout = this.workouts[workoutId];
             if (!workout) return '';
+            const liftCount = (workout.exercises || []).length;
 
             return `
                 <div draggable="${this.editMode ? 'true' : 'false'}" 
@@ -657,13 +666,14 @@ class GymApp {
                         <div class="flex items-center gap-3 flex-1">
                             ${this.editMode ? '<div class="cursor-move text-slate-500 text-2xl">☰</div>' : ''}
                             <button onclick="app.startWorkout('${workout.id}')" class="flex items-center gap-4 flex-1 text-left ${this.editMode ? 'opacity-50 pointer-events-none' : ''}">
-                                <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-2xl shadow-inner">🏋️</div>
+                                <div class="${workout.color} w-12 h-12 rounded-lg flex items-center justify-center text-xl shadow-inner">${String(index + 1).padStart(2, '0')}</div>
                                 <div>
                                     <h3 class="text-xl font-bold">${workout.name}</h3>
-                                    <p class="text-slate-400 text-sm">${workout.subtitle}</p>
+                                    <p class="text-slate-400 text-sm">${workout.subtitle} <span class="opacity-60">· ${liftCount} lifts</span></p>
                                 </div>
                             </button>
                         </div>
+                        ${!this.editMode ? `<button onclick="app.startWorkout('${workout.id}')" class="start-chip">START ↗</button>` : ''}
                         ${this.editMode ? `<div class="flex gap-2">
                             <button onclick="app.editingWorkoutHeader = '${workout.id}'; app.render()" class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded text-xs font-bold uppercase">Rename</button>
                             <button onclick="app.deleteWorkout('${workout.id}')" class="bg-red-600/20 text-red-400 px-3 py-1 rounded text-xs font-bold uppercase">Delete</button>
@@ -675,24 +685,30 @@ class GymApp {
         }).join('');
 
         return `
-            <div class="min-h-screen pb-20 animate-fade-in">
-                <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
-                    <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-3xl font-black tracking-tight">Never Give Up</h1>
-                        <div class="flex items-center gap-2">
-                            <button onclick="app.showMenu = !app.showMenu; app.render()" class="bg-white/10 p-2 rounded-lg" aria-label="Settings menu">Customize⚙️</button>
-                        </div>
-                    </div>
-                    <p class="text-blue-100 font-medium">Ready for your session, Gymbro?</p>
-                </div>
-                ${this.editMode || this.showMenu ? `<div class="p-4 -mt-6">
-                    <button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-xl font-black">${this.editMode ? 'Finish Customizing' : 'Customize Workouts'}</button>
-                </div>` : '<div class="h-6"></div>'}
-                <div class="px-4">
+            <main class="dashboard-shell animate-fade-in">
+                <header class="dashboard-top">
+                    <div><div class="brand-mark"><span class="volt">●</span> SETPOINT</div><div class="text-[10px] text-slate-500 mt-1 uppercase tracking-[.14em]">Training log / ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div></div>
+                    <button onclick="app.showMenu = !app.showMenu; app.render()" class="border border-white/10 bg-white/[.04] rounded-full px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-300">${this.editMode ? 'Done' : '•••'}</button>
+                </header>
+                <section class="dashboard-hero">
+                    <div class="eyebrow">${programName}</div>
+                    <h1 class="hero-title">Show up.<br><span class="volt">Move weight.</span></h1>
+                    <p class="hero-sub">The work speaks. Pick your session and make it count.</p>
+                    ${lastSession ? `<div class="hero-bottom"><span class="text-[10px] text-slate-400 uppercase tracking-widest">Last session</span><span class="text-[11px] font-extrabold">${lastSession.workoutName}</span><span class="text-[10px] text-slate-500">· ${lastLiftCount} lifts</span></div>` : `<div class="hero-bottom"><span class="text-[10px] text-slate-400 uppercase tracking-widest">Your first rep starts here</span></div>`}
+                </section>
+                <section class="stat-strip" aria-label="Training stats">
+                    <div class="stat-tile"><div class="stat-value volt">${thisWeek}<span class="text-xs ml-1">/ 7</span></div><div class="stat-label">Sessions · 7d</div></div>
+                    <div class="stat-tile"><div class="stat-value">${this.workoutHistory.length}</div><div class="stat-label">Total sessions</div></div>
+                    <div class="stat-tile"><div class="stat-value">${workoutOrder.length}</div><div class="stat-label">In your split</div></div>
+                </section>
+                ${this.editMode || this.showMenu ? `<button onclick="app.editMode = !app.editMode; app.showMenu = false; app.render()" class="w-full mb-5 bg-white/[.05] border border-white/10 p-4 rounded-xl font-black text-sm">${this.editMode ? 'Finish customizing' : 'Customize your split'}</button>` : ''}
+                <section>
+                    <div class="section-heading"><div><div class="eyebrow">The plan</div><h2 class="mt-1">Choose your session</h2></div><span class="text-[10px] text-slate-500 uppercase tracking-widest">${workoutOrder.length} days</span></div>
                     ${workoutCards}
-                    ${this.editMode ? `<button onclick="app.creatingNewWorkout = true; app.render()" class="w-full bg-blue-600/20 text-blue-400 p-4 rounded-xl font-bold mb-4">+ Create New Workout</button>` : ''}
-                </div>
-            </div>`;
+                    ${this.editMode ? `<button onclick="app.creatingNewWorkout = true; app.render()" class="w-full bg-white/[.04] border border-dashed border-white/15 text-slate-300 p-4 rounded-xl font-bold mb-4">+ Add a training day</button>` : ''}
+                </section>
+                <div class="text-center pt-5 brand-mark text-slate-700">BUILT FOR THE LONG GAME</div>
+            </main>`;
     }
 
     renderLastSessions() {
@@ -726,7 +742,7 @@ class GymApp {
 
         return `
             <div class="min-h-screen pb-20 animate-fade-in">
-                <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
+                <div class="page-banner p-6 pb-12">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h1 class="text-3xl font-black tracking-tight">${programName ? programName + ' Sessions' : 'Last Sessions'}</h1>
@@ -793,7 +809,7 @@ class GymApp {
 
         return `
             <div class="min-h-screen pb-20 animate-fade-in">
-                <div class="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 p-6 pb-12 rounded-b-[2rem] shadow-xl">
+                <div class="page-banner p-6 pb-12">
                     <div class="flex items-center justify-between mb-4">
                         <h1 class="text-3xl font-black tracking-tight">My Workouts</h1>
                     </div>
